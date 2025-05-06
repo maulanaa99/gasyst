@@ -1,0 +1,48 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // Buat tabel mobils terlebih dahulu
+        Schema::create('mobils', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_mobil');
+            $table->string('plat_no');
+            $table->string('image');
+            $table->string('status');
+            $table->timestamps();
+        });
+
+        // Kemudian buat tabel drivers dengan foreign key
+        Schema::create('drivers', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_driver');
+            $table->string('outsourching');
+            $table->foreignId('id_mobil')->constrained('mobils')->onDelete('cascade');
+            $table->string('user');
+            $table->string('image');
+            $table->string('rute');
+            $table->string('status');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // Hapus tabel drivers dulu karena memiliki foreign key ke mobils
+        Schema::dropIfExists('drivers');
+        // Kemudian hapus tabel mobils
+        Schema::dropIfExists('mobils');
+    }
+};
