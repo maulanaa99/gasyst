@@ -9,7 +9,7 @@ class Driver extends Model
 {
     protected $table = 'drivers';
     protected $primaryKey = 'id_driver';
-    protected $fillable = ['nama_driver', 'outsourching', 'id_mobil', 'image', 'status'];
+    protected $fillable = ['nama_driver', 'outsourching', 'id_mobil', 'image', 'user', 'image', 'rute', 'status'];
 
     /**
      * Get the mobil that owns the driver.

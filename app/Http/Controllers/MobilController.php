@@ -29,8 +29,8 @@ class MobilController extends Controller
 
         if ($request->hasFile('image')) {
             $imageName = time().'.'.$request->image->extension();
-            $path = $request->file('image')->storeAs('public/mobil', $imageName);
-            $mobil->image = $path;
+            $request->file('image')->move(public_path('storage/mobil'), $imageName);
+            $mobil->image = 'mobil/' . $imageName;
         }
 
         $mobil->status = $request->status;
@@ -45,7 +45,10 @@ class MobilController extends Controller
 
         // Hapus file gambar jika ada
         if ($mobil->image) {
-            Storage::delete($mobil->image);
+            $oldImagePath = public_path('storage/' . $mobil->image);
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
         }
 
         $mobil->delete();
@@ -69,12 +72,15 @@ class MobilController extends Controller
         if ($request->hasFile('image')) {
             // Hapus file lama jika ada
             if ($mobil->image) {
-                Storage::delete($mobil->image);
+                $oldImagePath = public_path('storage/' . $mobil->image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
             }
 
             $imageName = time().'.'.$request->image->extension();
-            $path = $request->file('image')->storeAs('public/mobil', $imageName);
-            $mobil->image = $path;
+            $request->file('image')->move(public_path('storage/mobil'), $imageName);
+            $mobil->image = 'mobil/' . $imageName;
         }
 
         $mobil->status = $request->status;
