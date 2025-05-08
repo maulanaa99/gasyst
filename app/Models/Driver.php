@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Driver extends Model
 {
     protected $table = 'drivers';
-    protected $primaryKey = 'id_driver';
+    protected $primaryKey = 'id';
     protected $fillable = ['nama_driver', 'outsourching', 'id_mobil', 'image', 'user', 'image', 'rute', 'status'];
 
     /**
@@ -17,5 +17,10 @@ class Driver extends Model
     public function mobils(): BelongsTo
     {
         return $this->belongsTo(Mobil::class, 'id_mobil');
+    }
+
+    public function suratJalan()
+    {
+        return $this->hasMany(SuratJalan::class, 'id_driver');
     }
 }

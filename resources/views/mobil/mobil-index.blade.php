@@ -5,8 +5,6 @@ use Illuminate\Support\Facades\Storage;
 @endphp
 
 @push('page-styles')
-<link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-buttons-bs4/buttons.bootstrap4.css') }}">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 @endpush
@@ -191,12 +189,6 @@ use Illuminate\Support\Facades\Storage;
 @endsection
 
 @push('page-script')
-<script src="{{ asset('assets/vendors/datatables.net/jquery.dataTables.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/dataTables.buttons.min.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/buttons.print.min.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/buttons.html5.min.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/buttons.flash.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endpush
 

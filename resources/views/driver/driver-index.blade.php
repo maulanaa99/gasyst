@@ -4,7 +4,8 @@
 <link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-buttons-bs4/buttons.bootstrap4.css') }}">
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+    rel="stylesheet" />
 @endpush
 
 @section('content')
@@ -28,7 +29,8 @@
                                         class="icon-base ri ri-external-link-line icon-18px"></i> <span
                                         class="d-none d-sm-inline-block">Export</span></span></span></button></div>
                     <button class="btn create-new btn-primary" tabindex="0" aria-controls="DataTables_Table_0"
-                        type="button" data-bs-toggle="modal" data-bs-target="#addDriverModal"><span><span class="d-flex align-items-center"><i
+                        type="button" data-bs-toggle="modal" data-bs-target="#addDriverModal"><span><span
+                                class="d-flex align-items-center"><i
                                     class="icon-base ri ri-add-line icon-18px me-sm-1"></i><span
                                     class="d-none d-sm-inline-block">Add New Record</span></span></span></button>
                 </div>
@@ -56,28 +58,105 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $item->nama_driver }}</td>
                         <td>{{ $item->outsourching }}</td>
-                        <td>{{ $item->mobils->plat_no }}</td>
+                        <td>{{ $item->mobils ? $item->mobils->plat_no : '-' }}</td>
                         <td>{{ $item->user }}</td>
                         <td>{{ $item->rute }}</td>
-                        <td>{{ $item->status }}</td>
+                        @if ($item->status == 'Available')
+                        <td><span class="badge rounded-pill  bg-label-success">{{ $item->status }}</span>
+                        </td>
+                        @else
+                        <td><span class="badge rounded-pill  bg-label-danger">{{ $item->status }}</span></td>
+                        @endif
                         <td>
-                            <button type="button" class="btn btn-primary btn-edit"
-                                data-id="{{ $item->id }}"
-                                data-nama="{{ $item->nama_driver }}"
-                                data-outsourching="{{ $item->outsourching }}"
-                                data-mobil="{{ $item->id_mobil }}"
-                                data-user="{{ $item->user }}"
-                                data-rute="{{ $item->rute }}"
+                            <button type="button" class="btn btn-icon btn-warning btn-edit waves-effect waves-light"
+                                data-id="{{ $item->id }}" data-nama="{{ $item->nama_driver }}"
+                                data-outsourching="{{ $item->outsourching }}" data-mobil="{{ $item->id_mobil }}"
+                                data-user="{{ $item->user }}" data-rute="{{ $item->rute }}"
                                 data-status="{{ $item->status }}">
-                                Edit
+                                <i class="icon-base ri ri-edit-line icon-18px" style="color: white"></i>
                             </button>
                             <form action="{{ route('driver.destroy', $item->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
+                                <button type="submit"
+                                    class="btn btn-icon btn-danger btn-fab demo waves-effect waves-light"
+                                    onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')"> <i
+                                        class="icon-base ri ri-delete-bin-line icon-18px" style="color: white"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
+                    <!-- Modal Edit Driver -->
+                    <div class="modal fade" id="editDriverModal" tabindex="-1" aria-labelledby="editDriverModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editDriverModalLabel">Edit Data Driver</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <form action="#" method="POST" id="editDriverForm">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="driver_id" id="edit_driver_id">
+                                    <div class="modal-body">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-3">
+                                                    <label for="edit_nama_driver" class="form-label">Nama Driver</label>
+                                                    <input type="text" class="form-control" id="edit_nama_driver"
+                                                        name="nama_driver" required>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <label for="edit_outsourching"
+                                                        class="form-label">Outsourching</label>
+                                                    <input type="text" class="form-control" id="edit_outsourching"
+                                                        name="outsourching" required>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <label for="edit_id_mobil" class="form-label">Mobil</label>
+                                                    <select class="form-select select2" id="edit_id_mobil"
+                                                        name="id_mobil" required>
+                                                        <option value="" disabled selected>Pilih Mobil</option>
+                                                        @foreach($mobils as $mobil)
+                                                        <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{
+                                                            $mobil->plat_no }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group mb-3">
+                                                    <label for="edit_user" class="form-label">User</label>
+                                                    <input type="text" class="form-control" id="edit_user" name="user"
+                                                        required>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <label for="edit_rute" class="form-label">Rute</label>
+                                                    <input type="text" class="form-control" id="edit_rute" name="rute"
+                                                        required>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <label for="edit_status" class="form-label">Status</label>
+                                                    <select class="form-select" id="edit_status" name="status" required>
+                                                        <option value="Aktif">Aktif</option>
+                                                        <option value="Tidak Aktif">Tidak Aktif</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     @endforeach
                 </tbody>
             </table>
@@ -111,7 +190,8 @@
                                 <select class="form-select select2" id="id_mobil" name="id_mobil" required>
                                     <option value="" disabled selected>Pilih Mobil</option>
                                     @foreach($mobils as $mobil)
-                                        <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{ $mobil->plat_no }}</option>
+                                    <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{ $mobil->plat_no }}
+                                    </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -145,66 +225,7 @@
     </div>
 </div>
 
-<!-- Modal Edit Driver -->
-<div class="modal fade" id="editDriverModal" tabindex="-1" aria-labelledby="editDriverModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editDriverModalLabel">Edit Data Driver</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="#" method="POST" id="editDriverForm">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="driver_id" id="edit_driver_id">
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="edit_nama_driver" class="form-label">Nama Driver</label>
-                                <input type="text" class="form-control" id="edit_nama_driver" name="nama_driver" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_outsourching" class="form-label">Outsourching</label>
-                                <input type="text" class="form-control" id="edit_outsourching" name="outsourching" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_id_mobil" class="form-label">Mobil</label>
-                                <select class="form-select select2" id="edit_id_mobil" name="id_mobil" required>
-                                    <option value="" disabled selected>Pilih Mobil</option>
-                                    @foreach($mobils as $mobil)
-                                        <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{ $mobil->plat_no }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="edit_user" class="form-label">User</label>
-                                <input type="text" class="form-control" id="edit_user" name="user" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_rute" class="form-label">Rute</label>
-                                <input type="text" class="form-control" id="edit_rute" name="rute" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_status" class="form-label">Status</label>
-                                <select class="form-select" id="edit_status" name="status" required>
-                                    <option value="Aktif">Aktif</option>
-                                    <option value="Tidak Aktif">Tidak Aktif</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 @endsection
 
 @push('page-script')
@@ -240,7 +261,7 @@
         });
 
         // Handle click pada tombol edit
-        $('.btn-edit').on('click', function() {
+        $(document).on('click', '.btn-edit', function() {
             // Ambil data dari atribut data-*
             var id = $(this).data('id');
             var nama = $(this).data('nama');

@@ -49,11 +49,12 @@
         <!-- Role -->
         <div class="mt-4">
             <x-input-label for="role" :value="__('role')" />
-            <select id="role" name="role" class="block mt-1 w-full bg-black text-white border border-gray-600 rounded-md focus:outline-none focus:ring focus:ring-gray-500" required autofocus>
+            <select id="role" name="role" class="block mt-1 w-full text-black border border-gray-600 rounded-md focus:outline-none focus:ring focus:ring-gray-500" required autofocus>
                 <option value="" disabled selected>Pilih Role</option>
                 <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                 <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
                 <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User </option>
+                <option value="security" {{ old('role') == 'security' ? 'selected' : '' }}>Security</option>
             </select>
             <x-input-error :messages="$errors->get('role')" class="mt-2" />
         </div>

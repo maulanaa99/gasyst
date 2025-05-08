@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pemesanan__drivers', function (Blueprint $table) {
+        Schema::create('surat_jalans', function (Blueprint $table) {
             $table->id();
             $table->date('tanggal');
-            $table->integer('id_karyawan');
+            $table->foreignId('id_karyawan')->constrained('karyawans')->onDelete('cascade');
             $table->string('tujuan');
             $table->date('jam_berangkat');
-            $table->integer('id_driver');
+            $table->foreignId('id_driver')->constrained('drivers')->onDelete('cascade');
             $table->string('status');
             $table->string('keterangan');
             $table->timestamps();
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pemesanan__drivers');
+        Schema::dropIfExists('surat_jalans');
     }
 };
