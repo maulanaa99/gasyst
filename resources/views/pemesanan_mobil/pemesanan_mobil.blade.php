@@ -2,6 +2,7 @@
 
 @php
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 @endphp
 
 @push('page-styles')
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 @section('content')
 <div class="card">
     <div class="card-header">
-        <div class="row card-header mx-0 px-2">
+        <div class="row card-header mx-0 px-2 py-0">
             @if(session('success'))
             <div class="alert alert-success">
                 {{ session('success') }}
@@ -23,19 +24,26 @@ use Illuminate\Support\Facades\Storage;
                 <h5 class="card-title mb-0 text-md-start text-center">List Pemesanan Mobil</h5>
             </div>
             <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto mt-0">
+                @if(Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'security')
+                <div class="alert alert-info mb-0">
+                    Menampilkan data untuk PIC: {{ Auth::user()->name }}
+                </div>
+                @endif
+                @if(Auth::user()->role !== 'security')
                 <div class="dt-buttons btn-group flex-wrap">
                     <div class="btn-group"><button
-                            class="btn buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none"
+                            class="btn btn-sm buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none"
                             tabindex="0" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog"
                             aria-expanded="false"><span><span class="d-flex align-items-center gap-2"><i
                                         class="icon-base ri ri-external-link-line icon-18px"></i> <span
                                         class="d-none d-sm-inline-block">Export</span></span></span></button></div>
-                    <button class="btn create-new btn-primary" tabindex="0" aria-controls="DataTables_Table_0"
+                    <button class="btn btn-sm create-new btn-primary" tabindex="0" aria-controls="DataTables_Table_0"
                         type="button" data-bs-toggle="modal" data-bs-target="#addPemesananMobilModal"><span><span
                                 class="d-flex align-items-center"><i
                                     class="icon-base ri ri-add-line icon-18px me-sm-1"></i><span
                                     class="d-none d-sm-inline-block">Add New Record</span></span></span></button>
                 </div>
+                @endif
             </div>
         </div>
     </div>
@@ -49,8 +57,10 @@ use Illuminate\Support\Facades\Storage;
                         <th>Nama Karyawan</th>
                         <th>Tujuan</th>
                         <th>Jam Berangkat</th>
+                        <th>Jam Kembali</th>
                         <th>Nama Driver</th>
-                        <th>Status</th>
+                        {{-- <th>Status</th> --}}
+                        <th>PIC</th>
                         <th>Keterangan</th>
                         <th>Action</th>
                     </tr>
@@ -59,23 +69,85 @@ use Illuminate\Support\Facades\Storage;
                     @foreach ($suratJalan as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $item->tanggal }}</td>
-                        <td>{{ $item->nama_karyawan }}</td>
-                        <td>{{ $item->tujuan }}</td>
-                        <td>{{ $item->jam_berangkat }}</td>
-                        <td>{{ $item->nama_driver }}</td>
-                        <td>{{ $item->status }}</td>
-                        <td>{{ $item->keterangan }}</td>
+                        <td>{{ date('d/m/y', strtotime($item->tanggal))
+                            }}</td>
                         <td>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#editPemesananMobilModal{{ $item->id }}">
-                                Edit
+                            @if($item->id_karyawan)
+                            <div class="d-flex justify-content-start align-items-center user-name">
+                                <div class="avatar-wrapper">
+                                    <div class="avatar me-2"><span
+                                            class="avatar-initial rounded-circle bg-label-success">{{
+                                            $item->karyawan->nama_karyawan[0]}}</span></div>
+                                </div>
+                                <div class="d-flex flex-column"><span
+                                        class="emp_name text-truncate text-heading fw-medium">{{
+                                        $item->karyawan->nama_karyawan}}</span><small class="emp_post text-truncate">{{
+                                        $item->karyawan->departemen}}</small></div>
+                            </div>
+                            @else
+                            <div class="d-flex justify-content-start align-items-center user-name">
+                                <div class="avatar-wrapper">
+                                    <div class="avatar me-2"><span
+                                            class="avatar-initial rounded-circle bg-label-success">DO</span></div>
+                                </div>
+                                <div class="d-flex flex-column"><span
+                                        class="emp_name text-truncate text-heading fw-medium">Driver Only</span></div>
+                            </div>
+                            @endif
+                        </td>
+                        <td class="text-nowrap" style="white-space: nowrap;">{{ $item->tujuan->nama_tujuan }}</td>
+                        <td>
+                            @if($item->jam_berangkat_aktual)
+                            {{ $item->jam_berangkat_aktual }}
+                            @else
+                            {{ $item->jam_berangkat }}
+                            @if((Auth::user()->role === 'superadmin' || Auth::user()->role === 'security') &&
+                            !$item->status_jam_berangkat_aktual)
+                            <div class="d-flex align-items-center mt-1">
+                                <button type="button" class="btn btn-sm btn-info ms-2"
+                                    onclick="setJamBerangkat({{ $item->id }})">
+                                    <i class="icon-base ri ri-time-line"></i>
+                                </button>
+                            </div>
+                            @endif
+                            @endif
+                        </td>
+                        <td>
+                            @if($item->jam_kembali)
+                            {{ $item->jam_kembali }}
+                            @else
+                            @if(Auth::user()->role === 'superadmin' || Auth::user()->role === 'security')
+                            <div class="d-flex align-items-center">
+                                @if($item->jam_berangkat_aktual)
+                                <button type="button" class="btn btn-sm btn-info ms-2"
+                                    onclick="setJamKembali({{ $item->id }})">
+                                    <i class="icon-base ri ri-time-line"></i>
+                                </button>
+                                @endif
+                            </div>
+                            @else
+                            -
+                            @endif
+                            @endif
+                        </td>
+                        <td>{{ $item->driver->nama_driver ?? '-' }}</td>
+                        {{-- <td>{{ $item->status }}</td> --}}
+                        <td>{{ $item->PIC }}</td>
+                        <td>{{ $item->keterangan }}</td>
+                        <td class="d-flex gap-2">
+                            <button type="button"
+                                class="btn btn-icon btn-warning btn-sm btn-edit waves-effect waves-light"
+                                data-bs-toggle="modal" data-bs-target="#editPemesananMobilModal{{ $item->id }}">
+                                <i class="icon-base ri ri-edit-line icon-18px" style="color: white"></i>
                             </button>
                             <form action="{{ route('surat-jalan.destroy', $item->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger"
-                                    onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
+                                <button type="submit"
+                                    class="btn btn-icon btn-danger btn-sm btn-fab demo waves-effect waves-light"
+                                    onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                    <i class="icon-base ri ri-delete-bin-line icon-18px" style="color: white"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -95,7 +167,36 @@ use Illuminate\Support\Facades\Storage;
                                     @csrf
                                     @method('PUT')
                                     <div class="modal-body">
-                                        <div class="row mb-3">
+                                        <div class="row">
+                                            <div class="col-md-12 mb-3">
+                                                <div class="form-group">
+                                                    <label class="form-label">Jenis Pemesanan</label>
+                                                    <div class="d-flex gap-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                name="jenis_pemesanan" id="jenisKaryawan{{ $item->id }}"
+                                                                value="karyawan" {{ $item->id_karyawan ? 'checked' : ''
+                                                            }}>
+                                                            <label class="form-check-label"
+                                                                for="jenisKaryawan{{ $item->id }}">
+                                                                Karyawan
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                name="jenis_pemesanan"
+                                                                id="jenisDriverOnly{{ $item->id }}" value="driver_only"
+                                                                {{ !$item->id_karyawan ? 'checked' : '' }}>
+                                                            <label class="form-check-label"
+                                                                for="jenisDriverOnly{{ $item->id }}">
+                                                                Driver Only
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group mb-3">
                                                     <label for="tanggal{{ $item->id }}"
@@ -103,22 +204,56 @@ use Illuminate\Support\Facades\Storage;
                                                     <input type="date" class="form-control" id="tanggal{{ $item->id }}"
                                                         name="tanggal" value="{{ $item->tanggal }}" required>
                                                 </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="id_karyawan{{ $item->id }}" class="form-label">Nama
-                                                        Karyawan</label>
-                                                    <select class="form-select select2" id="id_karyawan{{ $item->id }}" name="id_karyawan" required>
-                                                        @foreach($karyawan as $k)
-                                                            <option value="{{ $k->id }}" {{ $item->id_karyawan == $k->id ? 'selected' : '' }}>
-                                                                {{ $k->nama_karyawan }}
+                                                <div id="formKaryawan{{ $item->id }}"
+                                                    style="display: {{ $item->id_karyawan ? 'block' : 'none' }}">
+                                                    <div class="form-group mb-3">
+                                                        <label for="id_karyawan{{ $item->id }}" class="form-label">Nama
+                                                            Karyawan</label>
+                                                        <select class="form-select select2"
+                                                            id="id_karyawan{{ $item->id }}" name="id_karyawan">
+                                                            <option value="">Pilih Karyawan</option>
+                                                            @foreach($karyawan as $k)
+                                                            <option value="{{ $k->id }}" {{ $item->id_karyawan == $k->id
+                                                                ?
+                                                                'selected' : '' }}>
+                                                                {{ $k->nik }} | {{ $k->nama_karyawan }}
                                                             </option>
-                                                        @endforeach
-                                                    </select>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div id="formDriverOnly{{ $item->id }}"
+                                                    style="display: {{ !$item->id_karyawan ? 'block' : 'none' }}">
+                                                    <div class="form-group mb-3">
+                                                        <label for="departemen{{ $item->id }}"
+                                                            class="form-label">Departemen</label>
+                                                        <select class="form-select select2"
+                                                            id="id_departemen{{ $item->id }}" name="id_departemen">
+                                                            <option value="">Pilih Departemen</option>
+                                                            @foreach($departemen as $d)
+                                                            <option value="{{ $d->id }}" {{ $item->id_departemen ==
+                                                                $d->id ? 'selected' : '' }}>
+                                                                {{ $d->nama_departemen }}
+                                                            </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
                                                 </div>
                                                 <div class="form-group mb-3">
                                                     <label for="tujuan{{ $item->id }}" class="form-label">Tujuan</label>
-                                                    <input type="text" class="form-control" id="tujuan{{ $item->id }}"
-                                                        name="tujuan" value="{{ $item->tujuan }}" required>
+                                                    <select class="form-select select2" id="id_tujuan{{ $item->id }}"
+                                                        name="id_tujuan">
+                                                        <option value="">Pilih Tujuan</option>
+                                                        @foreach($tujuan as $t)
+                                                        <option value="{{ $t->id }}" {{ $item->id_tujuan == $t->id ?
+                                                            'selected' : '' }}>
+                                                            {{ $t->nama_tujuan }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
+                                            </div>
+                                            <div class="col-md-6">
                                                 <div class="form-group mb-3">
                                                     <label for="jam_berangkat{{ $item->id }}" class="form-label">Jam
                                                         Berangkat</label>
@@ -126,33 +261,30 @@ use Illuminate\Support\Facades\Storage;
                                                         id="jam_berangkat{{ $item->id }}" name="jam_berangkat"
                                                         value="{{ $item->jam_berangkat }}" required>
                                                 </div>
+                                                @if(Auth::user()->role === 'superadmin')
                                                 <div class="form-group mb-3">
                                                     <label for="id_driver{{ $item->id }}" class="form-label">Nama
                                                         Driver</label>
-                                                    <input type="text" class="form-control"
-                                                        id="id_driver{{ $item->id }}" name="id_driver"
-                                                        value="{{ $item->id_driver }}" required>
+                                                    <select class="form-select select2" id="id_driver{{ $item->id }}"
+                                                        name="id_driver" required>
+                                                        <option value="">Pilih Driver</option>
+                                                        @foreach($driver as $d)
+                                                        @if($d->status === 'Available' || $item->id_driver == $d->id)
+                                                        <option value="{{ $d->id }}" {{ $item->id_driver == $d->id ?
+                                                            'selected' : '' }}>
+                                                            {{ $d->nama_driver }}
+                                                        </option>
+                                                        @endif
+                                                        @endforeach
+                                                    </select>
                                                 </div>
+                                                @endif
                                                 <div class="form-group mb-3">
                                                     <label for="keterangan{{ $item->id }}"
                                                         class="form-label">Keterangan</label>
                                                     <input type="text" class="form-control"
                                                         id="keterangan{{ $item->id }}" name="keterangan"
                                                         value="{{ $item->keterangan }}" required>
-                                                </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="status{{ $item->id }}" class="form-label">Status</label>
-                                                    <select class="form-select select2" id="status{{ $item->id }}"
-                                                        name="status" required>
-                                                        <option value="Masuk" {{ $item->status == 'Masuk' ? 'selected' :
-                                                            '' }}>Masuk
-                                                        </option>
-                                                        <option value="Keluar" {{ $item->status == 'Keluar' ? 'selected'
-                                                            : '' }}>Keluar
-                                                        </option>
-                                                        <option value="Cuti" {{ $item->status == 'Cuti' ? 'selected' :
-                                                            '' }}>Cuti</option>
-                                                    </select>
                                                 </div>
                                             </div>
                                         </div>
@@ -185,60 +317,104 @@ use Illuminate\Support\Facades\Storage;
             <form action="{{ route('surat-jalan.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <div class="form-group">
+                                <label class="form-label">Jenis Pemesanan</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="jenis_pemesanan"
+                                            id="jenisKaryawan" value="karyawan" checked>
+                                        <label class="form-check-label" for="jenisKaryawan">
+                                            Karyawan
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="jenis_pemesanan"
+                                            id="jenisDriverOnly" value="driver_only">
+                                        <label class="form-check-label" for="jenisDriverOnly">
+                                            Driver Only
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="tanggal" class="form-label">Tanggal</label>
                                 <input type="date" class="form-control" id="tanggal" name="tanggal"
                                     value="{{ date('Y-m-d') }}" required>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="id_karyawan" class="form-label">Nama Karyawan</label>
-                                <select class="form-select select2" id="id_karyawan" name="id_karyawan" required>
-                                    <option value="">Pilih Karyawan</option>
-                                    @foreach($karyawan as $karyawans)
-                                    <option value="{{ $karyawans->id }}">{{ $karyawans->nik }} | {{ $karyawans->nama_karyawan }}</option>
-                                    @endforeach
-                                </select>
+                            <div id="formKaryawan">
+                                <div class="form-group mb-3">
+                                    <label for="id_karyawan" class="form-label">Nama Karyawan</label>
+                                    <select class="form-select select2" id="id_karyawan" name="id_karyawan">
+                                        <option value="">Pilih Karyawan</option>
+                                        @foreach($karyawan as $karyawans)
+                                        <option value="{{ $karyawans->id }}">{{ $karyawans->nik }} | {{
+                                            $karyawans->nama_karyawan }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="formDriverOnly" style="display: none;">
+                                <div class="form-group mb-3">
+                                    <label for="id_departemen" class="form-label">Departemen</label>
+                                    <select class="form-select select2" id="id_departemen" name="id_departemen">
+                                        <option value="">Pilih Departemen</option>
+                                        @foreach($departemen as $departemen)
+                                        <option value="{{ $departemen->id }}">{{ $departemen->nama_departemen }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="tujuan" class="form-label">Tujuan</label>
-                                <input type="text" class="form-control" id="tujuan" name="tujuan" required>
+                                <select class="form-select select2" id="id_tujuan" name="id_tujuan">
+                                    <option value="">Pilih Tujuan</option>
+                                    @foreach($tujuan as $t)
+                                    <option value="{{ $t->id }}">{{ $t->nama_tujuan }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="form-group mb-3"></div>
-                            <label for="jam_berangkat" class="form-label">Jam Berangkat</label>
-                            <input type="time" class="form-control" id="jam_berangkat" name="jam_berangkat" required>
                         </div>
-                        <div class="form-group mb-3">
-                            <label for="id_driver" class="form-label">Nama Driver</label>
-                            <select class="form-select select2" id="id_driver" name="id_driver" required>
-                                <option value="">Pilih Driver</option>
-                                @foreach($driver as $drivers)
-                                <option value="{{ $drivers->id }}">{{ $drivers->nama_driver }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select select2" id="status" name="status" required>
-                                <option value="Masuk">Masuk</option>
-                                <option value="Keluar">Keluar</option>
-                                <option value="Cuti">Cuti</option>
-                            </select>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="keterangan" class="form-label">Keterangan</label>
-                            <input type="text" class="form-control" id="keterangan" name="keterangan" required>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="jam_berangkat" class="form-label">Jam Berangkat</label>
+                                <input type="time" class="form-control" id="jam_berangkat" name="jam_berangkat"
+                                    required>
+                            </div>
+                            @if(Auth::user()->role === 'superadmin')
+                            <div class="form-group mb-3">
+                                <label for="id_driver" class="form-label">Nama Driver</label>
+                                <select class="form-select select2" id="id_driver" name="id_driver" required>
+                                    <option value="">Pilih Driver</option>
+                                    @foreach($driver as $drivers)
+                                    @if($drivers->status === 'Available')
+                                    <option value="{{ $drivers->id }}">{{ $drivers->nama_driver }}</option>
+                                    @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
+                            <div class="form-group mb-3">
+                                <label for="keterangan" class="form-label">Keterangan</label>
+                                <input type="text" class="form-control" id="keterangan" name="keterangan" required>
+                            </div>
                         </div>
                     </div>
+                    <input type="hidden" class="form-control" id="PIC" name="PIC" value="{{ auth()->user()->name }}"
+                        required>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
+            </form>
         </div>
-        </form>
     </div>
 </div>
 
@@ -254,7 +430,24 @@ use Illuminate\Support\Facades\Storage;
 <script>
     $(document).ready(function() {
         $('#pemesananMobilTable').DataTable({
-            responsive: true
+            responsive: false,
+            scrollX: true,
+            scrollY: '400px',
+            scrollCollapse: true,
+            fixedColumns: true,
+            autoWidth: false,
+            columnDefs: [
+                { width: '50px', targets: 0 },  // No
+                { width: '100px', targets: 1 }, // Tanggal
+                { width: '200px', targets: 2 }, // Nama Karyawan
+                { width: '150px', targets: 3 }, // Tujuan
+                { width: '120px', targets: 4 }, // Jam Berangkat
+                { width: '120px', targets: 5 }, // Jam Kembali
+                { width: '150px', targets: 6 }, // Nama Driver
+                { width: '100px', targets: 7 }, // PIC
+                { width: '150px', targets: 8 }, // Keterangan
+                { width: '100px', targets: 9 }  // Action
+            ]
         });
 
         // Initialize Select2 for all current and future select elements with class select2
@@ -271,7 +464,83 @@ use Illuminate\Support\Facades\Storage;
                 width: '100%'
             });
         });
+
+        // Handle jenis pemesanan radio buttons untuk form tambah
+        $('input[name="jenis_pemesanan"]').change(function() {
+            if ($(this).val() === 'karyawan') {
+                $('#formKaryawan').show();
+                $('#formDriverOnly').hide();
+                $('#id_karyawan').prop('required', true);
+                $('#departemen').prop('required', false);
+            } else {
+                $('#formKaryawan').hide();
+                $('#formDriverOnly').show();
+                $('#id_karyawan').prop('required', false);
+                $('#departemen').prop('required', true);
+            }
+        });
+
+        // Handle jenis pemesanan radio buttons untuk form edit
+        $(document).on('change', 'input[name="jenis_pemesanan"]', function() {
+            const modalId = $(this).closest('.modal').attr('id');
+            const itemId = modalId.replace('editPemesananMobilModal', '');
+
+            if ($(this).val() === 'karyawan') {
+                $(`#formKaryawan${itemId}`).show();
+                $(`#formDriverOnly${itemId}`).hide();
+                $(`#id_karyawan${itemId}`).prop('required', true);
+                $(`#departemen${itemId}`).prop('required', false);
+            } else {
+                $(`#formKaryawan${itemId}`).hide();
+                $(`#formDriverOnly${itemId}`).show();
+                $(`#id_karyawan${itemId}`).prop('required', false);
+                $(`#departemen${itemId}`).prop('required', true);
+            }
+        });
     });
+
+    // Fungsi untuk mengisi jam kembali di tabel
+    function setJamKembali(id) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const currentTime = `${hours}:${minutes}`;
+
+        if(confirm('Apakah Anda yakin ingin mengisi jam kembali dan mengubah status driver menjadi not available?')) {
+            // Kirim request ke server untuk update jam kembali dan status driver
+            fetch(`/surat-jalan/${id}/update-jam-kembali`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    jam_kembali: currentTime
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    // Reload halaman untuk menampilkan perubahan
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mengupdate jam kembali');
+            });
+        }
+    }
+
+    // Fungsi untuk mengisi jam kembali di form edit
+    function setJamKembaliForm(id) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const currentTime = `${hours}:${minutes}`;
+
+        document.getElementById(`jam_kembali${id}`).value = currentTime;
+    }
 
     // Fungsi preview image saat upload
     function previewImage(input) {
@@ -297,6 +566,58 @@ use Illuminate\Support\Facades\Storage;
 
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    // Fungsi untuk mengisi jam berangkat
+    function setJamBerangkat(id) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const currentTime = `${hours}:${minutes}`;
+
+        // Cek apakah id_driver ada
+        fetch(`/surat-jalan/${id}/check-driver`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.hasDriver) {
+                    alert('Silahkan isi driver terlebih dahulu!');
+                    return;
+                }
+
+                if(confirm('Apakah Anda yakin ingin mengisi jam berangkat aktual?')) {
+                    fetch(`/surat-jalan/${id}/update-jam-berangkat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            jam_berangkat: currentTime
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert(error.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat memeriksa data driver');
+            });
     }
 </script>
 @endpush

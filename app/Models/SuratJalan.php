@@ -10,11 +10,15 @@ class SuratJalan extends Model
     protected $fillable = [
         'tanggal',
         'id_karyawan',
-        'tujuan',
+        'id_tujuan',
         'jam_berangkat',
         'id_driver',
         'status',
-        'keterangan'
+        'PIC',
+        'keterangan',
+        'jam_berangkat_aktual',
+        'status_jam_berangkat_aktual',
+        'id_departemen'
     ];
 
     public function karyawan()
@@ -25,6 +29,16 @@ class SuratJalan extends Model
     public function driver()
     {
         return $this->belongsTo(Driver::class, 'id_driver');
+    }
+
+    public function departemen()
+    {
+        return $this->belongsTo(Departemen::class, 'id_departemen');
+    }
+
+    public function tujuan()
+    {
+        return $this->belongsTo(Tujuan::class, 'id_tujuan');
     }
 }
 

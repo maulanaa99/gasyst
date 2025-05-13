@@ -3,43 +3,11 @@
         <ul class="menu-inner">
             <!-- Dashboards -->
 
-            <li class="menu-item">
-                <a href="javascript:void(0)" class="menu-link">
+            <li class="menu-item {{ Request::is('dashboard*') ? 'active open' : '' }}">
+                <a href="/dashboard" class="menu-link">
                     <i class="menu-icon icon-base ri ri-home-smile-line"></i>
                     <div data-i18n="Dashboards">Dashboards</div>
                 </a>
-                <ul class="menu-sub">
-                    <li class="menu-item active">
-                        <a href="dashboards-crm.html" class="menu-link">
-                            <i class="menu-icon icon-base ri ri-computer-line"></i>
-                            <div data-i18n="CRM">CRM</div>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="index.html" class="menu-link">
-                            <i class="menu-icon icon-base ri ri-bar-chart-line"></i>
-                            <div data-i18n="Analytics">Analytics</div>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="app-ecommerce-dashboard.html" class="menu-link">
-                            <i class="menu-icon icon-base ri ri-shopping-cart-2-line"></i>
-                            <div data-i18n="eCommerce">eCommerce</div>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="app-logistics-dashboard.html" class="menu-link">
-                            <i class="menu-icon icon-base ri ri-truck-line"></i>
-                            <div data-i18n="Logistics">Logistics</div>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="app-academy-dashboard.html" class="menu-link">
-                            <i class="menu-icon icon-base ri ri-book-open-line"></i>
-                            <div data-i18n="Academy">Academy</div>
-                        </a>
-                    </li>
-                </ul>
             </li>
             <li class="menu-item {{ Request::is('driver*') ? 'active open' : '' }}">
                 <a href="{{ route('driver.index') }}" class="menu-link">
@@ -55,10 +23,10 @@
                 </a>
             </li>
 
-            <li class="menu-item">
-                <a href="#" class="menu-link">
-                    <i class="menu-icon icon-base ri ri-car-line"></i>
-                    <div data-i18n="Mobil">Pemesanan Mobil</div>
+            <li class="menu-item {{ Request::is('surat-jalan*') ? 'active open' : '' }}">
+                <a href="{{ route('surat-jalan.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ri ri-file-list-3-line"></i>
+                    <div data-i18n="Pesan Mobil">Pesan Mobil</div>
                 </a>
             </li>
         </ul>

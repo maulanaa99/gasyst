@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Kemudian buat tabel drivers dengan foreign key
-        Schema::create('drivers', function (Blueprint $table) {
+        Schema::create('mobils', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_driver');
-            $table->string('outsourching');
-            $table->foreignId('id_mobil')->constrained('mobils')->onDelete('cascade');
-            $table->string('user');
+            $table->string('nama_mobil');
+            $table->string('plat_no');
             $table->string('image');
-            $table->string('rute');
             $table->string('status');
             $table->timestamps();
         });
@@ -30,9 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Hapus tabel drivers dulu karena memiliki foreign key ke mobils
-        Schema::dropIfExists('drivers');
-        // Kemudian hapus tabel mobils
         Schema::dropIfExists('mobils');
     }
 };

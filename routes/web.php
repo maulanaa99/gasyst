@@ -5,6 +5,10 @@ use App\Http\Controllers\MobilController;
 use App\Http\Controllers\PemesananDriverController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuratJalanController;
+use App\Http\Controllers\ChartController;
+use App\Models\Driver;
+use App\Models\Mobil;
+use App\Models\SuratJalan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -13,11 +17,21 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        $totalPemesananMobil = SuratJalan::count();
+        $totalDriver = Driver::count();
+        $totalMobil = Mobil::count();
+        $DriverAvailable = Driver::where('status', 'Available')->count();
+        $notAvailableDriver = Driver::where('status', 'Not Available')->count();
+        $driver = Driver::all();
+        $mobil = Mobil::all();
+        return view('dashboard', compact('totalPemesananMobil', 'totalDriver', 'totalMobil', 'DriverAvailable', 'notAvailableDriver', 'driver', 'mobil'));
     })->name('dashboard');
 
+    // API Routes for Charts
+    Route::get('/api/pemesanan-mobil/{period}', [ChartController::class, 'getPemesananMobilData']);
+
     // Routes for admin
-    Route::group(['middleware' => ['role:superadmin,admin,user']], function () {
+    Route::group(['middleware' => ['role:superadmin,admin,user,security']], function () {
         //Profile
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -42,23 +56,22 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/surat-jalan', [SuratJalanController::class, 'store'])->name('surat-jalan.store');
         Route::put('/surat-jalan/{id}', [SuratJalanController::class, 'update'])->name('surat-jalan.update');
         Route::delete('/surat-jalan/{id}', [SuratJalanController::class, 'destroy'])->name('surat-jalan.destroy');
+        Route::post('/surat-jalan/{id}/update-jam-kembali', [SuratJalanController::class, 'updateJamKembali'])->name('surat-jalan.update-jam-kembali');
+        Route::post('/surat-jalan/{id}/update-jam-berangkat', [SuratJalanController::class, 'updateJamBerangkat'])->name('surat-jalan.update-jam-berangkat');
+        Route::post('/surat-jalan/{id}/update-driver-status', [SuratJalanController::class, 'updateDriverStatus'])->name('surat-jalan.update-driver-status');
+        Route::get('/surat-jalan/{id}/check-driver', [SuratJalanController::class, 'checkDriver'])->name('surat-jalan.check-driver');
     });
 
     // Routes for superadmin
-    Route::group(['middleware' => ['role:superadmin']], function () {
-
-    });
+    Route::group(['middleware' => ['role:superadmin']], function () {});
 
     // Routes for regular users
-    Route::group(['middleware' => ['role:user']], function () {
-
-    });
+    Route::group(['middleware' => ['role:user']], function () {});
 
     // Routes for security
-    Route::group(['middleware' => ['role:security']], function () {
-
+    Route::group(['middleware' => ['role:superadmin,security']], function () {
+        // Route::get('/surat-jalan', [SuratJalanController::class, 'index'])->name('surat-jalan.index');
     });
-
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

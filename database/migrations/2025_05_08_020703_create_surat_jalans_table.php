@@ -16,9 +16,10 @@ return new class extends Migration
             $table->date('tanggal');
             $table->foreignId('id_karyawan')->constrained('karyawans')->onDelete('cascade');
             $table->string('tujuan');
-            $table->date('jam_berangkat');
+            $table->time('jam_berangkat');
             $table->foreignId('id_driver')->constrained('drivers')->onDelete('cascade');
             $table->string('status');
+            $table->string('PIC');
             $table->string('keterangan');
             $table->timestamps();
         });

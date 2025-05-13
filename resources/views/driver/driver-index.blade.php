@@ -44,7 +44,6 @@
                     <tr>
                         <th>No</th>
                         <th>Nama Driver</th>
-                        <th>Outsourching</th>
                         <th>Plat No</th>
                         <th>User</th>
                         <th>Rute</th>
@@ -56,8 +55,35 @@
                     @foreach ($driver as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $item->nama_driver }}</td>
-                        <td>{{ $item->outsourching }}</td>
+                        <td>
+                            @if($item->image==null)
+                            <div class="d-flex justify-content-start align-items-center user-name">
+                                <div class="avatar-wrapper">
+                                    <div class="avatar me-2"><span
+                                            class="avatar-initial rounded-circle bg-label-success">{{
+                                            $item->nama_driver[0] }}</span></div>
+                                </div>
+                                <div class="d-flex flex-column"><span
+                                        class="emp_name text-truncate text-heading fw-medium">{{ $item->nama_driver
+                                        }}</span><small class="emp_post text-truncate">{{ $item->outsourching }}</small>
+                                </div>
+                            </div>
+                            @else
+                            <div class="d-flex justify-content-start align-items-center user-name">
+                                <div class="avatar-wrapper">
+                                    <div class="avatar me-2">
+                                        <img src="{{ asset('storage/' . $item->image) }}" alt="Driver Image"
+                                            class="rounded-circle"
+                                            style="width: 40px; height: 40px; object-fit: cover;">
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column"><span
+                                        class="emp_name text-truncate text-heading fw-medium">{{ $item->nama_driver
+                                        }}</span><small class="emp_post text-truncate">{{ $item->outsourching }}</small>
+                                </div>
+                            </div>
+                            @endif
+                        </td>
                         <td>{{ $item->mobils ? $item->mobils->plat_no : '-' }}</td>
                         <td>{{ $item->user }}</td>
                         <td>{{ $item->rute }}</td>
@@ -96,7 +122,7 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
-                                <form action="#" method="POST" id="editDriverForm">
+                                <form action="{{ route('driver.update', $item->id) }}" method="POST" id="editDriverForm" enctype="multipart/form-data">
                                     @csrf
                                     @method('PUT')
                                     <input type="hidden" name="driver_id" id="edit_driver_id">
@@ -139,10 +165,21 @@
                                                         required>
                                                 </div>
                                                 <div class="form-group mb-3">
+                                                    <label for="edit_image" class="form-label">Image</label>
+                                                    <div class="mb-2">
+                                                        <img id="current_image" src="" alt="Current Driver Image" style="max-height: 100px;">
+                                                    </div>
+                                                    <input type="file" class="form-control" id="edit_image" name="image" onchange="previewEditImage(this)">
+                                                    <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
+                                                    <div class="mt-2">
+                                                        <img id="preview_edit" src="#" alt="Preview" style="max-height: 100px; display: none;">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group mb-3">
                                                     <label for="edit_status" class="form-label">Status</label>
-                                                    <select class="form-select" id="edit_status" name="status" required>
-                                                        <option value="Aktif">Aktif</option>
-                                                        <option value="Tidak Aktif">Tidak Aktif</option>
+                                                    <select class="form-select" id="edit_status" name="status">
+                                                        <option value="Available">Available</option>
+                                                        <option value="Not Available">Not Available</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -172,7 +209,7 @@
                 <h5 class="modal-title" id="addDriverModalLabel">Tambah Data Driver</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('driver.store') }}" method="POST">
+            <form action="{{ route('driver.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="row mb-3">
@@ -204,6 +241,10 @@
                             <div class="form-group mb-3">
                                 <label for="rute" class="form-label">Rute</label>
                                 <input type="text" class="form-control" id="rute" name="rute" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="image" class="form-label">Image</label>
+                                <input type="file" class="form-control" id="image" name="image" required>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="status" class="form-label">Status</label>
@@ -270,6 +311,7 @@
             var user = $(this).data('user');
             var rute = $(this).data('rute');
             var status = $(this).data('status');
+            var image = $(this).closest('tr').find('img').attr('src');
 
             // Set nilai ke form edit
             $('#edit_driver_id').val(id);
@@ -283,12 +325,46 @@
             $('#edit_rute').val(rute);
             $('#edit_status').val(status);
 
+            // Set current image
+            if (image) {
+                $('#current_image').attr('src', image).show();
+            } else {
+                $('#current_image').hide();
+            }
+
+            // Reset preview image
+            $('#preview_edit').hide();
+
             // Set action URL form
             $('#editDriverForm').attr('action', '/driver/' + id);
 
             // Tampilkan modal
             $('#editDriverModal').modal('show');
         });
+
+        // Handle image preview untuk form tambah
+        $('#image').change(function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#preview').attr('src', e.target.result).show();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     });
+
+    // Fungsi preview image saat edit
+    function previewEditImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#preview_edit').attr('src', e.target.result).show();
+                $('#current_image').hide();
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 </script>
 @endpush
