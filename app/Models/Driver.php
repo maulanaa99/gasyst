@@ -19,6 +19,11 @@ class Driver extends Model
         return $this->belongsTo(Mobil::class, 'id_mobil');
     }
 
+    public function karyawan(): BelongsTo
+    {
+        return $this->belongsTo(Karyawan::class, 'id_karyawan');
+    }
+
     public function suratJalan()
     {
         return $this->hasMany(SuratJalan::class, 'id_driver');

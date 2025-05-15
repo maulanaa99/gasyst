@@ -14,9 +14,13 @@ return new class extends Migration
         Schema::create('surat_jalans', function (Blueprint $table) {
             $table->id();
             $table->date('tanggal');
-            $table->foreignId('id_karyawan')->constrained('karyawans')->onDelete('cascade');
-            $table->string('tujuan');
+            $table->foreignId('id_karyawan')->nullable()->constrained('karyawans')->onDelete('cascade');
+            $table->foreignId('id_lokasi')->nullable()->constrained('lokasis')->onDelete('cascade');
+            $table->foreignId('id_departemen')->nullable()->constrained('departemens')->onDelete('cascade');
             $table->time('jam_berangkat');
+            $table->time('jam_berangkat_aktual')->nullable();
+            $table->string('status_jam_berangkat_aktual')->nullable();
+            $table->time('jam_kembali')->nullable();
             $table->foreignId('id_driver')->constrained('drivers')->onDelete('cascade');
             $table->string('status');
             $table->string('PIC');

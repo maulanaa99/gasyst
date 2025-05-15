@@ -46,7 +46,6 @@
                         <th>Nama Driver</th>
                         <th>Plat No</th>
                         <th>User</th>
-                        <th>Rute</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -85,8 +84,7 @@
                             @endif
                         </td>
                         <td>{{ $item->mobils ? $item->mobils->plat_no : '-' }}</td>
-                        <td>{{ $item->user }}</td>
-                        <td>{{ $item->rute }}</td>
+                        <td> {{ $item->karyawan->nama_karyawan }} </td>
                         @if ($item->status == 'Available')
                         <td><span class="badge rounded-pill  bg-label-success">{{ $item->status }}</span>
                         </td>

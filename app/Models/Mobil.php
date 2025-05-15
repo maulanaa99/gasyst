@@ -9,7 +9,7 @@ class Mobil extends Model
 {
     protected $table = 'mobils';
     protected $fillable = [
-        'nama_mobil', 'plat_no', 'image', 'status'
+        'nama_mobil', 'plat_no', 'car_image', 'status'
     ];
 
     /**

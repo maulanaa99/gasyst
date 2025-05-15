@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Departemen;
 use App\Models\Driver;
 use App\Models\Karyawan;
+use App\Models\Lokasi;
 use App\Models\SuratJalan;
-use App\Models\Tujuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,8 +25,8 @@ class SuratJalanController extends Controller
         $karyawan = Karyawan::all();
         $driver = Driver::all();
         $departemen = Departemen::all();
-        $tujuan = Tujuan::all();
-        return view('pemesanan_mobil.pemesanan_mobil', compact('suratJalan', 'karyawan', 'driver', 'departemen', 'tujuan'));
+        $lokasi = Lokasi::all();
+        return view('pemesanan_mobil.pemesanan_mobil', compact('suratJalan', 'karyawan', 'driver', 'departemen', 'lokasi'));
     }
 
     public function store(Request $request)
@@ -61,27 +61,40 @@ class SuratJalanController extends Controller
 
     public function updateJamKembali(Request $request, $id)
     {
-        $user = Auth::user();
+        try {
+            $user = Auth::user();
 
-        // Validasi role
-        if ($user->role !== 'superadmin' && $user->role !== 'security') {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $suratJalan = SuratJalan::find($id);
-        $suratJalan->jam_kembali = $request->jam_kembali;
-        $suratJalan->save();
-
-        // Update status driver menjadi Available
-        if ($suratJalan->id_driver) {
-            $driver = Driver::find($suratJalan->id_driver);
-            if ($driver) {
-                $driver->status = 'Available';
-                $driver->save();
+            // Validasi role
+            if ($user->role !== 'superadmin' && $user->role !== 'security') {
+                return response()->json(['error' => 'Unauthorized'], 403);
             }
-        }
 
-        return response()->json(['success' => true]);
+            // Validasi request
+            $request->validate([
+                'jam_kembali_aktual' => 'required|date_format:H:i'
+            ]);
+
+            $suratJalan = SuratJalan::findOrFail($id);
+            $suratJalan->jam_kembali_aktual = $request->jam_kembali_aktual;
+            $suratJalan->status_jam_kembali_aktual = true;
+            $suratJalan->save();
+
+            // Update status driver menjadi Available
+            if ($suratJalan->id_driver) {
+                $driver = Driver::find($suratJalan->id_driver);
+                if ($driver) {
+                    $driver->status = 'Available';
+                    $driver->save();
+                }
+            }
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Terjadi kesalahan saat mengupdate jam kembali',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function updateJamBerangkat(Request $request, $id)

@@ -17,9 +17,8 @@ return new class extends Migration
             $table->string('nama_driver');
             $table->string('outsourching');
             $table->foreignId('id_mobil')->constrained('mobils')->onDelete('cascade');
-            $table->string('user');
-            $table->string('image');
-            $table->string('rute');
+            $table->foreignId('id_karyawan')->constrained('karyawans')->onDelete('cascade');
+            $table->string('driver_image')->nullable();
             $table->string('status');
             $table->timestamps();
         });

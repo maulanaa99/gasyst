@@ -44,9 +44,9 @@ use Illuminate\Support\Facades\Storage;
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>Image</th>
                         <th>Nama Mobil</th>
                         <th>Plat No</th>
-                        <th>Image</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -55,26 +55,28 @@ use Illuminate\Support\Facades\Storage;
                     @foreach ($mobil as $item)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $item->nama_mobil }}</td>
-                        <td>{{ $item->plat_no }}</td>
                         <td>
-                            @if($item->image)
-                                <img src="{{ Storage::url($item->image) }}" alt="{{ $item->nama_mobil }}" style="max-height: 50px;">
+                            @if($item->car_image)
+                                <img src="{{ Storage::url($item->car_image) }}" alt="{{ $item->nama_mobil }}" style="max-height: 50px;">
                             @else
                                 <span class="text-muted">No Image</span>
                             @endif
                         </td>
+                        <td>{{ $item->nama_mobil }}</td>
+                        <td>{{ $item->plat_no }}</td>
                         <td>{{ $item->status }}</td>
                         <td>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-icon btn-warning btn-sm waves-effect waves-light" data-bs-toggle="modal"
                                 data-bs-target="#editMobilModal{{ $item->id }}">
-                                Edit
+                                <i class="icon-base ri ri-edit-line icon-18px" style="color: white"></i>
                             </button>
                             <form action="{{ route('mobil.destroy', $item->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger"
-                                    onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</button>
+                                <button type="submit" class="btn btn-icon btn-danger btn-sm waves-effect waves-light"
+                                    onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                    <i class="icon-base ri ri-delete-bin-line icon-18px" style="color: white"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -102,13 +104,13 @@ use Illuminate\Support\Facades\Storage;
                                                     <input type="text" class="form-control" id="plat_no{{ $item->id }}" name="plat_no" value="{{ $item->plat_no }}" required>
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <label for="image{{ $item->id }}" class="form-label">Image</label>
-                                                    @if($item->image)
+                                                    <label for="car_image{{ $item->id }}" class="form-label">Image</label>
+                                                    @if($item->car_image)
                                                         <div class="mb-2">
-                                                            <img src="{{ Storage::url($item->image) }}" alt="{{ $item->nama_mobil }}" style="max-height: 100px;">
+                                                            <img src="{{ Storage::url($item->car_image) }}" alt="{{ $item->nama_mobil }}" style="max-height: 100px;">
                                                         </div>
                                                     @endif
-                                                    <input type="file" class="form-control" id="image{{ $item->id }}" name="image" onchange="previewEditImage(this, {{ $item->id }})">
+                                                    <input type="file" class="form-control" id="car_image{{ $item->id }}" name="car_image" onchange="previewEditImage(this, {{ $item->id }})">
                                                     <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
                                                     <div class="mt-2">
                                                         <img id="preview_edit_{{ $item->id }}" src="#" alt="Preview" style="max-height: 100px; display: none;">
@@ -161,8 +163,8 @@ use Illuminate\Support\Facades\Storage;
                                 <input type="text" class="form-control" id="plat_no" name="plat_no" required>
                             </div>
                             <div class="form-group mb-3">
-                                <label for="image" class="form-label">Image</label>
-                                <input type="file" class="form-control" id="image" name="image" required onchange="previewImage(this)">
+                                <label for="car_image" class="form-label">Image</label>
+                                <input type="file" class="form-control" id="car_image" name="car_image" required onchange="previewImage(this)">
                                 <div class="mt-2">
                                     <img id="preview" src="#" alt="Preview" style="max-height: 100px; display: none;">
                                 </div>

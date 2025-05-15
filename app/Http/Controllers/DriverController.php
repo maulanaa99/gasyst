@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Driver;
+use App\Models\Karyawan;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -13,7 +14,8 @@ class DriverController extends Controller
     {
         $driver = Driver::all();
         $mobils = Mobil::all();
-        return view('driver.driver-index', compact('driver', 'mobils'));
+        $karyawans = Karyawan::all();
+        return view('driver.driver-index', compact('driver', 'mobils', 'karyawans'));
     }
 
     public function getDriver()

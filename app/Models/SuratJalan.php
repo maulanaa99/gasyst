@@ -10,14 +10,18 @@ class SuratJalan extends Model
     protected $fillable = [
         'tanggal',
         'id_karyawan',
-        'id_tujuan',
+        'id_lokasi',
+        'id_departemen',
         'jam_berangkat',
+        'jam_berangkat_aktual',
+        'status_jam_berangkat_aktual',
+        'jam_kembali',
+        'jam_kembali_aktual',
+        'status_jam_kembali_aktual',
         'id_driver',
         'status',
         'PIC',
         'keterangan',
-        'jam_berangkat_aktual',
-        'status_jam_berangkat_aktual',
         'id_departemen'
     ];
 
@@ -36,9 +40,9 @@ class SuratJalan extends Model
         return $this->belongsTo(Departemen::class, 'id_departemen');
     }
 
-    public function tujuan()
+    public function lokasi()
     {
-        return $this->belongsTo(Tujuan::class, 'id_tujuan');
+        return $this->belongsTo(Lokasi::class, 'id_lokasi');
     }
 }
 

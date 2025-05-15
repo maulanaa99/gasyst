@@ -27,10 +27,10 @@ class MobilController extends Controller
         $mobil->nama_mobil = $request->nama_mobil;
         $mobil->plat_no = $request->plat_no;
 
-        if ($request->hasFile('image')) {
-            $imageName = time().'.'.$request->image->extension();
-            $request->file('image')->move(public_path('storage/mobil'), $imageName);
-            $mobil->image = 'mobil/' . $imageName;
+        if ($request->hasFile('car_image')) {
+            $imageName = time().'.'.$request->car_image->extension();
+            $request->file('car_image')->move(public_path('storage/mobil'), $imageName);
+            $mobil->car_image = 'mobil/' . $imageName;
         }
 
         $mobil->status = $request->status;
@@ -44,8 +44,8 @@ class MobilController extends Controller
         $mobil = Mobil::find($id);
 
         // Hapus file gambar jika ada
-        if ($mobil->image) {
-            $oldImagePath = public_path('storage/' . $mobil->image);
+        if ($mobil->car_image) {
+            $oldImagePath = public_path('storage/' . $mobil->car_image);
             if (file_exists($oldImagePath)) {
                 unlink($oldImagePath);
             }
@@ -61,7 +61,7 @@ class MobilController extends Controller
         $request->validate([
             'nama_mobil' => 'required',
             'plat_no' => 'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'car_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'status' => 'required',
         ]);
 
@@ -69,18 +69,18 @@ class MobilController extends Controller
         $mobil->nama_mobil = $request->nama_mobil;
         $mobil->plat_no = $request->plat_no;
 
-        if ($request->hasFile('image')) {
+        if ($request->hasFile('car_image')) {
             // Hapus file lama jika ada
-            if ($mobil->image) {
-                $oldImagePath = public_path('storage/' . $mobil->image);
+            if ($mobil->car_image) {
+                $oldImagePath = public_path('storage/' . $mobil->car_image);
                 if (file_exists($oldImagePath)) {
                     unlink($oldImagePath);
                 }
             }
 
-            $imageName = time().'.'.$request->image->extension();
-            $request->file('image')->move(public_path('storage/mobil'), $imageName);
-            $mobil->image = 'mobil/' . $imageName;
+            $imageName = time().'.'.$request->car_image->extension();
+            $request->file('car_image')->move(public_path('storage/mobil'), $imageName);
+            $mobil->car_image = 'mobil/' . $imageName;
         }
 
         $mobil->status = $request->status;

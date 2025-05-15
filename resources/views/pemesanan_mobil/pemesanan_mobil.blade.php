@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
     rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
 @endpush
 
 @section('content')
@@ -16,9 +17,15 @@ use Illuminate\Support\Facades\Auth;
     <div class="card-header">
         <div class="row card-header mx-0 px-2 py-0">
             @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            </script>
             @endif
             <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
                 <h5 class="card-title mb-0 text-md-start text-center">List Pemesanan Mobil</h5>
@@ -91,16 +98,19 @@ use Illuminate\Support\Facades\Auth;
                                             class="avatar-initial rounded-circle bg-label-success">DO</span></div>
                                 </div>
                                 <div class="d-flex flex-column"><span
-                                        class="emp_name text-truncate text-heading fw-medium">Driver Only</span></div>
+                                        class="emp_name text-truncate text-heading fw-medium">Driver Only</span>
+                                    <small class="emp_post text-truncate">{{
+                                        $item->departemen->nama_departemen}}</small>
+                                </div>
                             </div>
                             @endif
                         </td>
-                        <td class="text-nowrap" style="white-space: nowrap;">{{ $item->tujuan->nama_tujuan }}</td>
+                        <td class="text-nowrap" style="white-space: nowrap;">{{ $item->lokasi->nama_lokasi }}</td>
                         <td>
                             @if($item->jam_berangkat_aktual)
-                            {{ $item->jam_berangkat_aktual }}
+                            <span class="text-success">Aktual : {{ $item->jam_berangkat_aktual }}</span>
                             @else
-                            {{ $item->jam_berangkat }}
+                            <span class="text-danger">Est : {{ $item->jam_berangkat }}</span>
                             @if((Auth::user()->role === 'superadmin' || Auth::user()->role === 'security') &&
                             !$item->status_jam_berangkat_aktual)
                             <div class="d-flex align-items-center mt-1">
@@ -113,11 +123,13 @@ use Illuminate\Support\Facades\Auth;
                             @endif
                         </td>
                         <td>
-                            @if($item->jam_kembali)
-                            {{ $item->jam_kembali }}
+                            @if($item->jam_kembali_aktual)
+                            <span class="text-success">Aktual : {{ $item->jam_kembali_aktual }}</span>
                             @else
-                            @if(Auth::user()->role === 'superadmin' || Auth::user()->role === 'security')
-                            <div class="d-flex align-items-center">
+                            <span class="text-danger">Est : {{ $item->jam_kembali }}</span>
+                            @if((Auth::user()->role === 'superadmin' || Auth::user()->role === 'security') &&
+                            !$item->status_jam_kembali_aktual)
+                            <div class="d-flex align-items-center mt-1">
                                 @if($item->jam_berangkat_aktual)
                                 <button type="button" class="btn btn-sm btn-info ms-2"
                                     onclick="setJamKembali({{ $item->id }})">
@@ -125,8 +137,6 @@ use Illuminate\Support\Facades\Auth;
                                 </button>
                                 @endif
                             </div>
-                            @else
-                            -
                             @endif
                             @endif
                         </td>
@@ -151,6 +161,8 @@ use Illuminate\Support\Facades\Auth;
                             </form>
                         </td>
                     </tr>
+
+
                     <!-- Modal Edit untuk item ini -->
                     <div class="modal fade" id="editPemesananMobilModal{{ $item->id }}" tabindex="-1"
                         aria-labelledby="editPemesananMobilModalLabel{{ $item->id }}" aria-hidden="true">
@@ -240,14 +252,14 @@ use Illuminate\Support\Facades\Auth;
                                                     </div>
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <label for="tujuan{{ $item->id }}" class="form-label">Tujuan</label>
-                                                    <select class="form-select select2" id="id_tujuan{{ $item->id }}"
-                                                        name="id_tujuan">
-                                                        <option value="">Pilih Tujuan</option>
-                                                        @foreach($tujuan as $t)
-                                                        <option value="{{ $t->id }}" {{ $item->id_tujuan == $t->id ?
+                                                    <label for="lokasi{{ $item->id }}" class="form-label">Lokasi</label>
+                                                    <select class="form-select select2" id="id_lokasi{{ $item->id }}"
+                                                        name="id_lokasi">
+                                                        <option value="">Pilih Lokasi</option>
+                                                        @foreach($lokasi as $l)
+                                                        <option value="{{ $l->id }}" {{ $item->id_lokasi == $l->id ?
                                                             'selected' : '' }}>
-                                                            {{ $t->nama_tujuan }}
+                                                            {{ $l->nama_lokasi }}
                                                         </option>
                                                         @endforeach
                                                     </select>
@@ -260,6 +272,13 @@ use Illuminate\Support\Facades\Auth;
                                                     <input type="time" class="form-control"
                                                         id="jam_berangkat{{ $item->id }}" name="jam_berangkat"
                                                         value="{{ $item->jam_berangkat }}" required>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <label for="jam_kembali{{ $item->id }}" class="form-label">Jam
+                                                        Kembali</label>
+                                                    <input type="time" class="form-control"
+                                                        id="jam_kembali{{ $item->id }}" name="jam_kembali"
+                                                        value="{{ $item->jam_kembali }}" required>
                                                 </div>
                                                 @if(Auth::user()->role === 'superadmin')
                                                 <div class="form-group mb-3">
@@ -279,13 +298,12 @@ use Illuminate\Support\Facades\Auth;
                                                     </select>
                                                 </div>
                                                 @endif
-                                                <div class="form-group mb-3">
-                                                    <label for="keterangan{{ $item->id }}"
-                                                        class="form-label">Keterangan</label>
-                                                    <input type="text" class="form-control"
-                                                        id="keterangan{{ $item->id }}" name="keterangan"
-                                                        value="{{ $item->keterangan }}" required>
-                                                </div>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="keterangan{{ $item->id }}"
+                                                    class="form-label">Keterangan</label>
+                                                <textarea class="form-control h-px-100" id="keterangan{{ $item->id }}"
+                                                    name="keterangan" required>{{ $item->keterangan }}</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -305,7 +323,7 @@ use Illuminate\Support\Facades\Auth;
     </div>
 </div>
 
-<!-- Modal Tambah Mobil -->
+<!-- Modal Tambah Pemesanan Mobil -->
 <div class="modal fade" id="addPemesananMobilModal" tabindex="-1" aria-labelledby="addPemesananMobilModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -372,21 +390,27 @@ use Illuminate\Support\Facades\Auth;
                                 </div>
                             </div>
                             <div class="form-group mb-3">
-                                <label for="tujuan" class="form-label">Tujuan</label>
-                                <select class="form-select select2" id="id_tujuan" name="id_tujuan">
-                                    <option value="">Pilih Tujuan</option>
-                                    @foreach($tujuan as $t)
-                                    <option value="{{ $t->id }}">{{ $t->nama_tujuan }}</option>
+                                <label for="lokasi" class="form-label">Lokasi</label>
+                                <select class="form-select select2" id="id_lokasi" name="id_lokasi">
+                                    <option value="">Pilih Lokasi</option>
+                                    @foreach($lokasi as $l)
+                                    <option value="{{ $l->id }}">{{ $l->nama_lokasi }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
+
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="jam_berangkat" class="form-label">Jam Berangkat</label>
                                 <input type="time" class="form-control" id="jam_berangkat" name="jam_berangkat"
                                     required>
                             </div>
+                            <div class="form-group mb-3">
+                                <label for="jam_kembali" class="form-label">Jam Kembali</label>
+                                <input type="time" class="form-control" id="jam_kembali" name="jam_kembali" required>
+                            </div>
+
                             @if(Auth::user()->role === 'superadmin')
                             <div class="form-group mb-3">
                                 <label for="id_driver" class="form-label">Nama Driver</label>
@@ -400,10 +424,13 @@ use Illuminate\Support\Facades\Auth;
                                 </select>
                             </div>
                             @endif
-                            <div class="form-group mb-3">
-                                <label for="keterangan" class="form-label">Keterangan</label>
-                                <input type="text" class="form-control" id="keterangan" name="keterangan" required>
-                            </div>
+
+
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="keterangan" class="form-label">Keterangan</label>
+                            <textarea class="form-control h-px-100" id="keterangan" name="keterangan"
+                                required></textarea>
                         </div>
                     </div>
                     <input type="hidden" class="form-control" id="PIC" name="PIC" value="{{ auth()->user()->name }}"
@@ -424,6 +451,7 @@ use Illuminate\Support\Facades\Auth;
 
 @push('page-script')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 @endpush
 
 @push('after-script')
@@ -440,7 +468,7 @@ use Illuminate\Support\Facades\Auth;
                 { width: '50px', targets: 0 },  // No
                 { width: '100px', targets: 1 }, // Tanggal
                 { width: '200px', targets: 2 }, // Nama Karyawan
-                { width: '150px', targets: 3 }, // Tujuan
+                { width: '150px', targets: 3 }, // Lokasi
                 { width: '120px', targets: 4 }, // Jam Berangkat
                 { width: '120px', targets: 5 }, // Jam Kembali
                 { width: '150px', targets: 6 }, // Nama Driver
@@ -497,6 +525,27 @@ use Illuminate\Support\Facades\Auth;
                 $(`#departemen${itemId}`).prop('required', true);
             }
         });
+
+        // SweetAlert2 untuk konfirmasi hapus
+        $('form').on('submit', function(e) {
+            if ($(this).find('button[type="submit"]').hasClass('btn-danger')) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data yang dihapus tidak dapat dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.submit();
+                    }
+                });
+            }
+        });
     });
 
     // Fungsi untuk mengisi jam kembali di tabel
@@ -506,66 +555,58 @@ use Illuminate\Support\Facades\Auth;
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const currentTime = `${hours}:${minutes}`;
 
-        if(confirm('Apakah Anda yakin ingin mengisi jam kembali dan mengubah status driver menjadi not available?')) {
-            // Kirim request ke server untuk update jam kembali dan status driver
-            fetch(`/surat-jalan/${id}/update-jam-kembali`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    jam_kembali: currentTime
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: 'Apakah Anda yakin ingin mengisi jam kembali aktual dan mengubah status driver menjadi available?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, isi jam kembali',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/surat-jalan/${id}/update-jam-kembali`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        jam_kembali_aktual: currentTime
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    // Reload halaman untuk menampilkan perubahan
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat mengupdate jam kembali');
-            });
-        }
-    }
-
-    // Fungsi untuk mengisi jam kembali di form edit
-    function setJamKembaliForm(id) {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const currentTime = `${hours}:${minutes}`;
-
-        document.getElementById(`jam_kembali${id}`).value = currentTime;
-    }
-
-    // Fungsi preview image saat upload
-    function previewImage(input) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                $('#preview').attr('src', e.target.result).show();
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if(data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Jam kembali berhasil diupdate',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message || 'Terjadi kesalahan saat mengupdate jam kembali'
+                    });
+                });
             }
-
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // Fungsi preview image saat edit
-    function previewEditImage(input, id) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                $('#preview_edit_' + id).attr('src', e.target.result).show();
-            }
-
-            reader.readAsDataURL(input.files[0]);
-        }
+        });
     }
 
     // Fungsi untuk mengisi jam berangkat
@@ -580,43 +621,74 @@ use Illuminate\Support\Facades\Auth;
             .then(response => response.json())
             .then(data => {
                 if (!data.hasDriver) {
-                    alert('Silahkan isi driver terlebih dahulu!');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan!',
+                        text: 'Silahkan isi driver terlebih dahulu!'
+                    });
                     return;
                 }
 
-                if(confirm('Apakah Anda yakin ingin mengisi jam berangkat aktual?')) {
-                    fetch(`/surat-jalan/${id}/update-jam-berangkat`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            jam_berangkat: currentTime
+                Swal.fire({
+                    title: 'Konfirmasi',
+                    text: 'Apakah Anda yakin ingin mengisi jam berangkat aktual?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, isi jam berangkat',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/surat-jalan/${id}/update-jam-berangkat`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                jam_berangkat: currentTime
+                            })
                         })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(data => {
+                                    throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if(data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Jam berangkat berhasil diupdate',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: error.message || 'Terjadi kesalahan saat mengupdate jam berangkat'
                             });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if(data.success) {
-                            window.location.reload();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert(error.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
-                    });
-                }
+                        });
+                    }
+                });
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat memeriksa data driver');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan saat memeriksa data driver'
+                });
             });
     }
 </script>

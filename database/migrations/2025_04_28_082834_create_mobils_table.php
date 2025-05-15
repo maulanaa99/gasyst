@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_mobil');
             $table->string('plat_no');
-            $table->string('image');
+            $table->string('car_image')->nullable();
             $table->string('status');
             $table->timestamps();
         });
