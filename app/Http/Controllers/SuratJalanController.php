@@ -66,7 +66,10 @@ class SuratJalanController extends Controller
 
             // Validasi role
             if ($user->role !== 'superadmin' && $user->role !== 'security') {
-                return response()->json(['error' => 'Unauthorized'], 403);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access'
+                ], 403);
             }
 
             // Validasi request
@@ -88,11 +91,14 @@ class SuratJalanController extends Controller
                 }
             }
 
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Jam kembali berhasil diupdate'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Terjadi kesalahan saat mengupdate jam kembali',
-                'message' => $e->getMessage()
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupdate jam kembali: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -104,7 +110,10 @@ class SuratJalanController extends Controller
 
             // Validasi role
             if ($user->role !== 'superadmin' && $user->role !== 'security') {
-                return response()->json(['error' => 'Unauthorized'], 403);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized access'
+                ], 403);
             }
 
             $suratJalan = SuratJalan::findOrFail($id);
@@ -127,20 +136,70 @@ class SuratJalanController extends Controller
                 }
             }
 
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Jam berangkat berhasil diupdate'
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Terjadi kesalahan saat mengupdate jam berangkat',
-                'message' => $e->getMessage()
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupdate jam berangkat: ' . $e->getMessage()
             ], 500);
         }
     }
 
     public function checkDriver($id)
     {
-        $suratJalan = SuratJalan::findOrFail($id);
-        return response()->json([
-            'hasDriver' => !is_null($suratJalan->id_driver)
-        ]);
+        try {
+            $suratJalan = SuratJalan::findOrFail($id);
+            return response()->json([
+                'success' => true,
+                'hasDriver' => !is_null($suratJalan->id_driver)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memeriksa driver: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        try {
+            $ids = $request->input('ids');
+
+            if (empty($ids)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada data yang dipilih'
+                ], 400);
+            }
+
+            // Update status driver menjadi Available untuk setiap surat jalan yang akan dihapus
+            $suratJalan = SuratJalan::whereIn('id', $ids)->get();
+            foreach ($suratJalan as $sj) {
+                if ($sj->id_driver) {
+                    $driver = Driver::find($sj->id_driver);
+                    if ($driver) {
+                        $driver->status = 'Available';
+                        $driver->save();
+                    }
+                }
+            }
+
+            // Hapus surat jalan yang dipilih
+            SuratJalan::whereIn('id', $ids)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data yang dipilih berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

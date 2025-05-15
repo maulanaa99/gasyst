@@ -58,8 +58,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/surat-jalan/{id}', [SuratJalanController::class, 'destroy'])->name('surat-jalan.destroy');
         Route::post('/surat-jalan/{id}/update-jam-kembali', [SuratJalanController::class, 'updateJamKembali'])->name('surat-jalan.update-jam-kembali');
         Route::post('/surat-jalan/{id}/update-jam-berangkat', [SuratJalanController::class, 'updateJamBerangkat'])->name('surat-jalan.update-jam-berangkat');
-        Route::post('/surat-jalan/{id}/update-driver-status', [SuratJalanController::class, 'updateDriverStatus'])->name('surat-jalan.update-driver-status');
         Route::get('/surat-jalan/{id}/check-driver', [SuratJalanController::class, 'checkDriver'])->name('surat-jalan.check-driver');
+        Route::post('/surat-jalan/delete-selected', [SuratJalanController::class, 'deleteSelected'])->name('surat-jalan.delete-selected');
     });
 
     // Routes for superadmin
