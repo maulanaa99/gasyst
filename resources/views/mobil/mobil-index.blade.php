@@ -5,8 +5,10 @@ use Illuminate\Support\Facades\Storage;
 @endphp
 
 @push('page-styles')
+{{--
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+    rel="stylesheet" /> --}}
 @endpush
 
 @section('content')
@@ -57,17 +59,18 @@ use Illuminate\Support\Facades\Storage;
                         <td>{{ $loop->iteration }}</td>
                         <td>
                             @if($item->car_image)
-                                <img src="{{ Storage::url($item->car_image) }}" alt="{{ $item->nama_mobil }}" style="max-height: 50px;">
+                            <img src="{{ Storage::url($item->car_image) }}" alt="{{ $item->nama_mobil }}"
+                                style="max-height: 50px;">
                             @else
-                                <span class="text-muted">No Image</span>
+                            <span class="text-muted">No Image</span>
                             @endif
                         </td>
                         <td>{{ $item->nama_mobil }}</td>
                         <td>{{ $item->plat_no }}</td>
                         <td>{{ $item->status }}</td>
                         <td>
-                            <button type="button" class="btn btn-icon btn-warning btn-sm waves-effect waves-light" data-bs-toggle="modal"
-                                data-bs-target="#editMobilModal{{ $item->id }}">
+                            <button type="button" class="btn btn-icon btn-warning btn-sm waves-effect waves-light"
+                                data-bs-toggle="modal" data-bs-target="#editMobilModal{{ $item->id }}">
                                 <i class="icon-base ri ri-edit-line icon-18px" style="color: white"></i>
                             </button>
                             <form action="{{ route('mobil.destroy', $item->id) }}" method="POST" class="d-inline">
@@ -82,63 +85,80 @@ use Illuminate\Support\Facades\Storage;
                     </tr>
 
                     <!-- Modal Edit untuk item ini -->
-                    <div class="modal fade" id="editMobilModal{{ $item->id }}" tabindex="-1" aria-labelledby="editMobilModalLabel{{ $item->id }}" aria-hidden="true">
+                    <div class="modal fade" id="editMobilModal{{ $item->id }}" tabindex="-1"
+                        aria-labelledby="editMobilModalLabel{{ $item->id }}" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="editMobilModalLabel{{ $item->id }}">Edit Data Mobil</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                                 </div>
-                                <form action="{{ route('mobil.update', $item->id) }}" method="POST" enctype="multipart/form-data">
+                                <form action="{{ route('mobil.update', $item->id) }}" method="POST"
+                                    enctype="multipart/form-data">
                                     @csrf
                                     @method('PUT')
                                     <div class="modal-body">
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <div class="form-group mb-3">
-                                                    <label for="nama_mobil{{ $item->id }}" class="form-label">Nama Mobil</label>
-                                                    <input type="text" class="form-control" id="nama_mobil{{ $item->id }}" name="nama_mobil" value="{{ $item->nama_mobil }}" required>
+                                                    <label for="nama_mobil{{ $item->id }}" class="form-label">Nama
+                                                        Mobil</label>
+                                                    <input type="text" class="form-control"
+                                                        id="nama_mobil{{ $item->id }}" name="nama_mobil"
+                                                        value="{{ $item->nama_mobil }}" required>
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <label for="plat_no{{ $item->id }}" class="form-label">Plat No</label>
-                                                    <input type="text" class="form-control" id="plat_no{{ $item->id }}" name="plat_no" value="{{ $item->plat_no }}" required>
+                                                    <label for="plat_no{{ $item->id }}" class="form-label">Plat
+                                                        No</label>
+                                                    <input type="text" class="form-control" id="plat_no{{ $item->id }}"
+                                                        name="plat_no" value="{{ $item->plat_no }}" required>
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <label for="car_image{{ $item->id }}" class="form-label">Image</label>
+                                                    <label for="car_image{{ $item->id }}"
+                                                        class="form-label">Image</label>
                                                     @if($item->car_image)
-                                                        <div class="mb-2">
-                                                            <img src="{{ Storage::url($item->car_image) }}" alt="{{ $item->nama_mobil }}" style="max-height: 100px;">
-                                                        </div>
+                                                    <div class="mb-2">
+                                                        <img src="{{ Storage::url($item->car_image) }}"
+                                                            alt="{{ $item->nama_mobil }}" style="max-height: 100px;">
+                                                    </div>
                                                     @endif
-                                                    <input type="file" class="form-control" id="car_image{{ $item->id }}" name="car_image" onchange="previewEditImage(this, {{ $item->id }})">
-                                                    <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
+                                                    <input type="file" class="form-control"
+                                                        id="car_image{{ $item->id }}" name="car_image"
+                                                        onchange="previewEditImage(this, {{ $item->id }})">
+                                                    <small class="text-muted">Biarkan kosong jika tidak ingin mengubah
+                                                        gambar</small>
                                                     <div class="mt-2">
-                                                        <img id="preview_edit_{{ $item->id }}" src="#" alt="Preview" style="max-height: 100px; display: none;">
+                                                        <img id="preview_edit_{{ $item->id }}" src="#" alt="Preview"
+                                                            style="max-height: 100px; display: none;">
                                                     </div>
                                                 </div>
                                                 <div class="form-group mb-3">
-                                                    <label for="status{{ $item->id }}" class="form-label">Status</label>
-                                                    <select class="form-select select2" id="status{{ $item->id }}" name="status" required>
-                                                        <option value="Aktif" {{ $item->status == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                                        <option value="Tidak Aktif" {{ $item->status == 'Tidak Aktif' ? 'selected' : '' }}>Tidak Aktif</option>
+                                                    <select class="select2 form-select select2-bootstrap-5-theme" data-allow-clear="true"
+                                                        id="status{{ $item->id }}" name="status" required>
+                                                        <option value="Aktif" {{ $item->status == 'Aktif' ? 'selected' :
+                                                            '' }}>Aktif</option>
+                                                        <option value="Tidak Aktif" {{ $item->status == 'Tidak Aktif' ?
+                                                            'selected' : '' }}>Tidak Aktif</option>
                                                     </select>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                                    </div>
-                                </form>
                             </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                            </div>
+                            </form>
                         </div>
                     </div>
-                    @endforeach
-                </tbody>
-            </table>
         </div>
+        @endforeach
+        </tbody>
+        </table>
     </div>
+</div>
 </div>
 
 <!-- Modal Tambah Mobil -->
@@ -164,17 +184,19 @@ use Illuminate\Support\Facades\Storage;
                             </div>
                             <div class="form-group mb-3">
                                 <label for="car_image" class="form-label">Image</label>
-                                <input type="file" class="form-control" id="car_image" name="car_image" required onchange="previewImage(this)">
+                                <input type="file" class="form-control" id="car_image" name="car_image" required
+                                    onchange="previewImage(this)">
                                 <div class="mt-2">
                                     <img id="preview" src="#" alt="Preview" style="max-height: 100px; display: none;">
                                 </div>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="status" class="form-label">Status</label>
-                                <select class="form-select select2" id="status" name="status" required>
-                                    <option value="Aktif">Aktif</option>
-                                    <option value="Tidak Aktif">Tidak Aktif</option>
-                                </select>
+                                    <select class="select2 form-select select2-bootstrap-5-theme" id="status" data-allow-clear="true"
+                                        name="status" required>
+                                        <option value="Aktif">Aktif</option>
+                                        <option value="Tidak Aktif">Tidak Aktif</option>
+                                    </select>
                             </div>
                         </div>
                     </div>
@@ -191,7 +213,7 @@ use Illuminate\Support\Facades\Storage;
 @endsection
 
 @push('page-script')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{{-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> --}}
 @endpush
 
 @push('after-script')
@@ -199,21 +221,6 @@ use Illuminate\Support\Facades\Storage;
     $(document).ready(function() {
         $('#mobilTable').DataTable({
             responsive: true
-        });
-
-        // Initialize Select2 for all current and future select elements with class select2
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
-        });
-
-        // Initialize Select2 for dynamic modal dropdowns
-        $(document).on('shown.bs.modal', '.modal', function() {
-            $(this).find('select').select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $(this),
-                width: '100%'
-            });
         });
     });
 

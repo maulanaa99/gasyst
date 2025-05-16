@@ -15,6 +15,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// API Routes for Charts
+Route::get('/api/pemesanan-mobil/{period}', [ChartController::class, 'getPemesananMobilData']);
+Route::get('/api/driver-trip/{month}', [ChartController::class, 'getDriverTripData']);
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         $totalPemesananMobil = SuratJalan::count();
@@ -27,12 +31,10 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard', compact('totalPemesananMobil', 'totalDriver', 'totalMobil', 'DriverAvailable', 'notAvailableDriver', 'driver', 'mobil'));
     })->name('dashboard');
 
-    // API Routes for Charts
-    Route::get('/api/pemesanan-mobil/{period}', [ChartController::class, 'getPemesananMobilData']);
-
     // Routes for admin
     Route::group(['middleware' => ['role:superadmin,admin,user,security']], function () {
         //Profile
+        Route::get('/profile/index', [ProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

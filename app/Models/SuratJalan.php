@@ -21,8 +21,7 @@ class SuratJalan extends Model
         'id_driver',
         'status',
         'PIC',
-        'keterangan',
-        'id_departemen'
+        'keterangan'
     ];
 
     public function karyawan()

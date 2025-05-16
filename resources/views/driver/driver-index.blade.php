@@ -1,11 +1,6 @@
 @extends('layout.master')
 
 @push('page-styles')
-<link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/vendors/datatables.net-buttons-bs4/buttons.bootstrap4.css') }}">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
-    rel="stylesheet" />
 @endpush
 
 @section('content')
@@ -110,88 +105,7 @@
                             </form>
                         </td>
                     </tr>
-                    <!-- Modal Edit Driver -->
-                    <div class="modal fade" id="editDriverModal" tabindex="-1" aria-labelledby="editDriverModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="editDriverModalLabel">Edit Data Driver</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <form action="{{ route('driver.update', $item->id) }}" method="POST" id="editDriverForm" enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="driver_id" id="edit_driver_id">
-                                    <div class="modal-body">
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <div class="form-group mb-3">
-                                                    <label for="edit_nama_driver" class="form-label">Nama Driver</label>
-                                                    <input type="text" class="form-control" id="edit_nama_driver"
-                                                        name="nama_driver" required>
-                                                </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="edit_outsourching"
-                                                        class="form-label">Outsourching</label>
-                                                    <input type="text" class="form-control" id="edit_outsourching"
-                                                        name="outsourching" required>
-                                                </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="edit_id_mobil" class="form-label">Mobil</label>
-                                                    <select class="form-select select2" id="edit_id_mobil"
-                                                        name="id_mobil" required>
-                                                        <option value="" disabled selected>Pilih Mobil</option>
-                                                        @foreach($mobils as $mobil)
-                                                        <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{
-                                                            $mobil->plat_no }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group mb-3">
-                                                    <label for="edit_user" class="form-label">User</label>
-                                                    <input type="text" class="form-control" id="edit_user" name="user"
-                                                        required>
-                                                </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="edit_rute" class="form-label">Rute</label>
-                                                    <input type="text" class="form-control" id="edit_rute" name="rute"
-                                                        required>
-                                                </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="edit_image" class="form-label">Image</label>
-                                                    <div class="mb-2">
-                                                        <img id="current_image" src="" alt="Current Driver Image" style="max-height: 100px;">
-                                                    </div>
-                                                    <input type="file" class="form-control" id="edit_image" name="image" onchange="previewEditImage(this)">
-                                                    <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
-                                                    <div class="mt-2">
-                                                        <img id="preview_edit" src="#" alt="Preview" style="max-height: 100px; display: none;">
-                                                    </div>
-                                                </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="edit_status" class="form-label">Status</label>
-                                                    <select class="form-select" id="edit_status" name="status">
-                                                        <option value="Available">Available</option>
-                                                        <option value="Not Available">Not Available</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+
                     @endforeach
                 </tbody>
             </table>
@@ -246,7 +160,7 @@
                             </div>
                             <div class="form-group mb-3">
                                 <label for="status" class="form-label">Status</label>
-                                <select class="form-select" id="status" name="status" required>
+                                <select class="form-select select2" id="status" name="status" required>
                                     <option value="" disabled selected>Pilih Status</option>
                                     <option value="Aktif">Aktif</option>
                                     <option value="Tidak Aktif">Tidak Aktif</option>
@@ -264,17 +178,90 @@
     </div>
 </div>
 
+<!-- Modal Edit Driver -->
+<div class="modal fade" id="editDriverModal" tabindex="-1" aria-labelledby="editDriverModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDriverModalLabel">Edit Data Driver</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('driver.update', $item->id) }}" method="POST" id="editDriverForm"
+                enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="driver_id" id="edit_driver_id">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="edit_nama_driver" class="form-label">Nama Driver</label>
+                                <input type="text" class="form-control" id="edit_nama_driver" name="nama_driver"
+                                    required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="edit_outsourching" class="form-label">Outsourching</label>
+                                <input type="text" class="form-control" id="edit_outsourching" name="outsourching"
+                                    required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="edit_id_mobil" class="form-label">Mobil</label>
+                                <select class="form-select select2" id="edit_id_mobil" name="id_mobil" required>
+                                    <option value="" disabled selected>Pilih Mobil</option>
+                                    @foreach($mobils as $mobil)
+                                    <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{
+                                        $mobil->plat_no }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="edit_user" class="form-label">User</label>
+                                <input type="text" class="form-control" id="edit_user" name="user" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="edit_rute" class="form-label">Rute</label>
+                                <input type="text" class="form-control" id="edit_rute" name="rute" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="edit_image" class="form-label">Image</label>
+                                <div class="mb-2">
+                                    <img id="current_image" src="" alt="Current Driver Image"
+                                        style="max-height: 100px;">
+                                </div>
+                                <input type="file" class="form-control" id="edit_image" name="image"
+                                    onchange="previewEditImage(this)">
+                                <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
+                                <div class="mt-2">
+                                    <img id="preview_edit" src="#" alt="Preview"
+                                        style="max-height: 100px; display: none;">
+                                </div>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="edit_status" class="form-label">Status</label>
+                                <select class="form-select select2" id="edit_status" name="status">
+                                    <option value="Available">Available</option>
+                                    <option value="Not Available">Not Available</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 @endsection
 
 @push('page-script')
-<script src="{{ asset('assets/vendors/datatables.net/jquery.dataTables.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-bs4/dataTables.bootstrap4.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/dataTables.buttons.min.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/buttons.print.min.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/buttons.html5.min.js') }}"></script>
-<script src="{{ asset('assets/vendors/datatables.net-buttons/buttons.flash.min.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endpush
 
 @push('after-script')
@@ -282,21 +269,6 @@
     $(document).ready(function() {
         $('#driverTable').DataTable({
             responsive: true
-        });
-
-        // Initialize Select2 for all current and future select elements with class select2
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
-        });
-
-        // Initialize Select2 for dynamic modal dropdowns
-        $(document).on('shown.bs.modal', '.modal', function() {
-            $(this).find('select').select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $(this),
-                width: '100%'
-            });
         });
 
         // Handle click pada tombol edit

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\SuratJalan;
+use App\Models\Driver;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ChartController extends Controller
 {
@@ -62,5 +64,55 @@ class ChartController extends Controller
             'values' => $values,
             'percentageChange' => round($percentageChange, 1)
         ]);
+    }
+
+    public function getDriverTripData($month)
+    {
+        try {
+            // Validate month parameter
+            if (!is_numeric($month) || $month < 1 || $month > 12) {
+                return response()->json([
+                    'error' => 'Invalid month parameter. Month must be between 1 and 12.'
+                ], 400);
+            }
+
+            $drivers = Driver::all();
+            if ($drivers->isEmpty()) {
+                return response()->json([
+                    'labels' => [],
+                    'values' => []
+                ]);
+            }
+
+            $labels = [];
+            $values = [];
+
+            // Get start and end date of the month
+            $startDate = Carbon::now()->month($month)->startOfMonth();
+            $endDate = Carbon::now()->month($month)->endOfMonth();
+
+            // Get trip data for each driver
+            foreach ($drivers as $driver) {
+                $totalTrips = SuratJalan::where('id_driver', $driver->id)
+                    ->whereBetween('tanggal', [$startDate, $endDate])
+                    ->count();
+
+                $labels[] = $driver->nama_driver;
+                $values[] = $totalTrips;
+            }
+
+            return response()->json([
+                'labels' => $labels,
+                'values' => $values
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in getDriverTripData: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
+            return response()->json([
+                'error' => 'Terjadi kesalahan saat mengambil data perjalanan driver'
+            ], 500);
+        }
     }
 }

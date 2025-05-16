@@ -6,13 +6,9 @@ use Illuminate\Support\Facades\Auth;
 @endphp
 
 @push('page-styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
-    rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/select/1.7.0/css/select.dataTables.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" rel="stylesheet">
+{{--
+<link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-select-bs5/select.bootstrap5.css') }}" /> --}}
+<link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css') }}" />
 @endpush
 
 @section('content')
@@ -42,8 +38,12 @@ use Illuminate\Support\Facades\Auth;
                 @if(Auth::user()->role !== 'security')
                 <div class="dt-buttons btn-group flex-wrap">
                     <div class="btn-group">
-                        <button class="btn btn-sm buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none"
-                            tabindex="0" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog"
+                        <button
+                            class="btn btn-sm buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none"
+                            tabindex="0"
+                            aria-controls="DataTables_Table_0"
+                            type="button"
+                            data-bs-toggle="dropdown"
                             aria-expanded="false">
                             <span>
                                 <span class="d-flex align-items-center gap-2">
@@ -52,19 +52,24 @@ use Illuminate\Support\Facades\Auth;
                                 </span>
                             </span>
                         </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('print')">
+                                    <i class="icon-base ri ri-printer-line me-2"></i>Print
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('excel')">
+                                    <i class="icon-base ri ri-file-excel-line me-2"></i>Excel
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('pdf')">
+                                    <i class="icon-base ri ri-file-pdf-line me-2"></i>PDF
+                                </a>
+                            </li>
+                        </ul>
                     </div>
-                    <button class="btn btn-sm btn-success me-2" id="selectAllBtn">
-                        <span class="d-flex align-items-center">
-                            <i class="icon-base ri ri-checkbox-multiple-line icon-18px me-sm-1"></i>
-                            <span class="d-none d-sm-inline-block">Select All</span>
-                        </span>
-                    </button>
-                    <button class="btn btn-sm btn-danger me-2" id="deselectAllBtn">
-                        <span class="d-flex align-items-center">
-                            <i class="icon-base ri ri-checkbox-multiple-blank-line icon-18px me-sm-1"></i>
-                            <span class="d-none d-sm-inline-block">Deselect All</span>
-                        </span>
-                    </button>
                     <button class="btn btn-sm btn-danger me-2" id="deleteSelectedBtn" style="display: none;">
                         <span class="d-flex align-items-center">
                             <i class="icon-base ri ri-delete-bin-line icon-18px me-sm-1"></i>
@@ -90,7 +95,7 @@ use Illuminate\Support\Facades\Auth;
             <table class="table table-bordered table-hover" id="pemesananMobilTable">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th><input type="checkbox" class="form-check-input" id="selectAll"></th>
                         <th>No</th>
                         <th>Tanggal</th>
                         <th>Nama Karyawan</th>
@@ -98,7 +103,6 @@ use Illuminate\Support\Facades\Auth;
                         <th>Jam Berangkat</th>
                         <th>Jam Kembali</th>
                         <th>Nama Driver</th>
-                        {{-- <th>Status</th> --}}
                         <th>PIC</th>
                         <th>Keterangan</th>
                         <th>Action</th>
@@ -107,7 +111,8 @@ use Illuminate\Support\Facades\Auth;
                 <tbody>
                     @foreach ($suratJalan as $item)
                     <tr data-id="{{ $item->id }}">
-                        <td></td>
+                        <td><input type="checkbox" class="form-check-input item-checkbox" data-id="{{ $item->id }}">
+                        </td>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ date('d/m/y', strtotime($item->tanggal))
                             }}</td>
@@ -138,7 +143,8 @@ use Illuminate\Support\Facades\Auth;
                             </div>
                             @endif
                         </td>
-                        <td class="text-nowrap" style="white-space: nowrap;">{{ $item->lokasi->nama_lokasi ?? '-' }}</td>
+                        <td class="text-nowrap" style="white-space: nowrap;">{{ $item->lokasi->nama_lokasi ?? '-' }}
+                        </td>
                         <td>
                             @if($item->jam_berangkat_aktual)
                             <span class="text-success">Aktual : {{ $item->jam_berangkat_aktual }}</span>
@@ -361,7 +367,8 @@ use Illuminate\Support\Facades\Auth;
                 <h5 class="modal-title" id="addPemesananMobilModalLabel">Tambah Data Pemesanan Mobil</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('surat-jalan.store') }}" method="POST" enctype="multipart/form-data" id="addPemesananMobilForm">
+            <form action="{{ route('surat-jalan.store') }}" method="POST" enctype="multipart/form-data"
+                id="addPemesananMobilForm">
                 @csrf
                 <div class="modal-body">
                     <div class="row">
@@ -468,7 +475,8 @@ use Illuminate\Support\Facades\Auth;
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="submitSpinner"></span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"
+                            id="submitSpinner"></span>
                         <span id="submitText">Simpan</span>
                     </button>
                 </div>
@@ -482,131 +490,121 @@ use Illuminate\Support\Facades\Auth;
 @endsection
 
 @push('page-script')
-<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endpush
 
 @push('after-script')
+<script src="{{ asset('assets/vendor/libs/datatables-buttons/datatables-buttons.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/jszip/jszip.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/pdfmake/pdfmake.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/datatables-buttons/buttons.html5.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/datatables-buttons/buttons.print.js') }}"></script>
 <script>
     // Fungsi untuk mendapatkan CSRF token
     function getCsrfToken() {
         return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
     }
 
-    // Fungsi untuk mengisi jam kembali di tabel
-    function setJamKembali(id) {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const currentTime = `${hours}:${minutes}`;
-
-        Swal.fire({
-            title: 'Konfirmasi',
-            text: 'Apakah Anda yakin ingin mengisi jam kembali aktual dan mengubah status driver menjadi available?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, isi jam kembali',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Tampilkan loading
-                Swal.fire({
-                    title: 'Memproses...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                fetch(`/surat-jalan/${id}/update-jam-kembali`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': getCsrfToken()
-                    },
-                    body: JSON.stringify({
-                        jam_kembali_aktual: currentTime
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if(data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Jam kembali berhasil diupdate',
-                            showConfirmButton: false,
-                            timer: 1500
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: error.message || 'Terjadi kesalahan saat mengupdate jam kembali'
-                    });
-                });
-            }
+    $(document).ready(function() {
+        // Inisialisasi DataTable
+        const table = $('#pemesananMobilTable').DataTable({
+            order: [[1, 'asc']],
+            buttons: [
+                {
+                    extend: 'print',
+                    text: 'Print',
+                    className: 'buttons-print d-none',
+                    exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                },
+                {
+                    extend: 'excel',
+                    text: 'Excel',
+                    className: 'buttons-excel d-none',
+                    exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                },
+                {
+                    extend: 'pdf',
+                    text: 'PDF',
+                    className: 'buttons-pdf d-none',
+                    exportOptions: { columns: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
+                }
+            ],
+            columnDefs: [
+                {
+                    targets: 0,
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    targets: -1,
+                    orderable: false,
+                    searchable: false
+                }
+            ]
         });
-    }
 
-    // Fungsi untuk mengisi jam berangkat
-    function setJamBerangkat(id) {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const currentTime = `${hours}:${minutes}`;
+        // Fungsi untuk export tabel
+        window.exportTable = function(type) {
+            const exportOptions = {
+                columns: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+            };
 
-        // Cek apakah id_driver ada
-        fetch(`/surat-jalan/${id}/check-driver`, {
-            headers: {
-                'X-CSRF-TOKEN': getCsrfToken()
+            switch(type) {
+                case 'print':
+                    table.button('.buttons-print').trigger();
+                    break;
+                case 'excel':
+                    table.button('.buttons-excel').trigger();
+                    break;
+                case 'pdf':
+                    table.button('.buttons-pdf').trigger();
+                    break;
             }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data.hasDriver) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan!',
-                    text: 'Silahkan isi driver terlebih dahulu!'
-                });
-                return;
-            }
+        };
+
+        // Handle Select All checkbox
+        $('#selectAll').on('change', function() {
+            const isChecked = $(this).prop('checked');
+            $('.item-checkbox').prop('checked', isChecked);
+            updateDeleteButtonVisibility();
+        });
+
+        // Handle individual checkboxes
+        $(document).on('change', '.item-checkbox', function() {
+            updateSelectAllState();
+            updateDeleteButtonVisibility();
+        });
+
+        // Function to update select all checkbox state
+        function updateSelectAllState() {
+            const totalCheckboxes = $('.item-checkbox').length;
+            const checkedCheckboxes = $('.item-checkbox:checked').length;
+            $('#selectAll').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
+        }
+
+        // Function to update delete button visibility
+        function updateDeleteButtonVisibility() {
+            const checkedCount = $('.item-checkbox:checked').length;
+            $('#deleteSelectedBtn').toggle(checkedCount > 0);
+        }
+
+        // Handle delete selected button click
+        $('#deleteSelectedBtn').click(function() {
+            const selectedIds = $('.item-checkbox:checked').map(function() {
+                return $(this).data('id');
+            }).get();
+
+            if (selectedIds.length === 0) return;
 
             Swal.fire({
-                title: 'Konfirmasi',
-                text: 'Apakah Anda yakin ingin mengisi jam berangkat aktual?',
-                icon: 'question',
+                title: 'Apakah Anda yakin?',
+                text: `Anda akan menghapus ${selectedIds.length} data yang dipilih!`,
+                icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, isi jam berangkat',
+                confirmButtonText: 'Ya, hapus!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -619,168 +617,8 @@ use Illuminate\Support\Facades\Auth;
                         }
                     });
 
-                    fetch(`/surat-jalan/${id}/update-jam-berangkat`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            jam_berangkat: currentTime
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if(data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: 'Jam berangkat berhasil diupdate',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        } else {
-                            throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: error.message || 'Terjadi kesalahan saat mengupdate jam berangkat'
-                        });
-                    });
-                }
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Terjadi kesalahan saat memeriksa data driver'
-            });
-        });
-    }
-
-    $(document).ready(function() {
-        console.log('Document ready');
-
-        // Destroy existing DataTable instance if it exists
-        if ($.fn.DataTable.isDataTable('#pemesananMobilTable')) {
-            $('#pemesananMobilTable').DataTable().destroy();
-        }
-
-        // Initialize DataTable
-        const table = $('#pemesananMobilTable').DataTable({
-            responsive: true,
-            scrollX: true,
-            scrollY: '400px',
-            scrollCollapse: true,
-            fixedColumns: true,
-            autoWidth: false,
-            select: {
-                style: 'multi',
-                selector: 'td:first-child',
-                className: 'selected'
-            },
-            columnDefs: [
-                {
-                    orderable: false,
-                    className: 'select-checkbox',
-                    targets: 0,
-                    width: '30px'
-                },
-                { width: '50px', targets: 1 },  // No
-                { width: '100px', targets: 2 }, // Tanggal
-                { width: '200px', targets: 3 }, // Nama Karyawan
-                { width: '150px', targets: 4 }, // Lokasi
-                { width: '120px', targets: 5 }, // Jam Berangkat
-                { width: '120px', targets: 6 }, // Jam Kembali
-                { width: '150px', targets: 7 }, // Nama Driver
-                { width: '100px', targets: 8 }, // PIC
-                { width: '150px', targets: 9 }, // Keterangan
-                { width: '100px', targets: 10 }  // Action
-            ],
-            language: {
-                select: {
-                    rows: {
-                        _: "You have selected %d rows",
-                        0: "Click a row to select it",
-                        1: "Only 1 row selected"
-                    }
-                },
-                search: "Search:",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
-                }
-            }
-        });
-
-        // Toggle delete selected button visibility
-        table.on('select deselect', function() {
-            const selectedRows = table.rows({ selected: true }).count();
-            $('#deleteSelectedBtn').toggle(selectedRows > 0);
-        });
-
-        // Select All button
-        $('#selectAllBtn').on('click', function() {
-            table.rows().select();
-        });
-
-        // Deselect All button
-        $('#deselectAllBtn').on('click', function() {
-            table.rows().deselect();
-        });
-
-        // Delete selected rows
-        $('#deleteSelectedBtn').on('click', function() {
-            const selectedRows = table.rows({ selected: true });
-            const selectedIds = [];
-
-            // Extract only the IDs from selected rows
-            selectedRows.nodes().each(function(row) {
-                selectedIds.push($(row).data('id'));
-            });
-
-            if (selectedIds.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Warning!',
-                    text: 'No data selected!'
-                });
-                return;
-            }
-
-            Swal.fire({
-                title: 'Are you sure?',
-                text: `You will delete ${selectedIds.length} selected data!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!',
-                cancelButtonText: 'Cancel',
-                showLoaderOnConfirm: true,
-                preConfirm: () => {
-                    return fetch('/surat-jalan/delete-selected', {
+                    // Kirim request untuk menghapus data yang dipilih
+                    fetch('/surat-jalan/delete-selected', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -790,60 +628,208 @@ use Illuminate\Support\Facades\Auth;
                             ids: selectedIds
                         })
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(response.statusText);
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Data yang dipilih berhasil dihapus',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
                         }
-                        return response.json();
                     })
                     .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`);
-                    });
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if (result.value.success) {
-                        // Remove selected rows from the table
-                        selectedRows.remove().draw();
-
-                        // Hide delete button if no rows are selected
-                        if (table.rows({ selected: true }).count() === 0) {
-                            $('#deleteSelectedBtn').hide();
-                        }
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: 'Selected data has been deleted',
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                    } else {
+                        console.error('Error:', error);
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error!',
-                            text: result.value.message || 'Failed to delete selected data'
+                            title: 'Oops...',
+                            text: error.message || 'Terjadi kesalahan saat menghapus data'
                         });
-                    }
+                    });
                 }
             });
         });
 
-        // Initialize Select2 for all current and future select elements with class select2
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
-        });
+        // Fungsi untuk mengisi jam kembali di tabel
+        function setJamKembali(id) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
 
-        // Initialize Select2 for dynamic modal dropdowns
-        $(document).on('shown.bs.modal', '.modal', function() {
-            $(this).find('select').select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $(this),
-                width: '100%'
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin mengisi jam kembali aktual dan mengubah status driver menjadi available?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, isi jam kembali',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(`/surat-jalan/${id}/update-jam-kembali`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            jam_kembali_aktual: currentTime
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Jam kembali berhasil diupdate',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message || 'Terjadi kesalahan saat mengupdate jam kembali'
+                        });
+                    });
+                }
             });
-        });
+        }
+
+        // Fungsi untuk mengisi jam berangkat
+        function setJamBerangkat(id) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
+
+            // Cek apakah id_driver ada
+            fetch(`/surat-jalan/${id}/check-driver`, {
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken()
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.hasDriver) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Peringatan!',
+                        text: 'Silahkan isi driver terlebih dahulu!'
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Konfirmasi',
+                    text: 'Apakah Anda yakin ingin mengisi jam berangkat aktual?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, isi jam berangkat',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Tampilkan loading
+                        Swal.fire({
+                            title: 'Memproses...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        fetch(`/surat-jalan/${id}/update-jam-berangkat`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': getCsrfToken()
+                            },
+                            body: JSON.stringify({
+                                jam_berangkat: currentTime
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(data => {
+                                    throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if(data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Jam berangkat berhasil diupdate',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: error.message || 'Terjadi kesalahan saat mengupdate jam berangkat'
+                            });
+                        });
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan saat memeriksa data driver'
+                });
+            });
+        }
 
         // Handle jenis pemesanan radio buttons untuk form tambah
         $('input[name="jenis_pemesanan"]').change(function() {
@@ -878,7 +864,7 @@ use Illuminate\Support\Facades\Auth;
             }
         });
 
-        // SweetAlert2 untuk konfirmasi hapus
+        // SweetAlert2 untuk konfirmasi hapus single item
         $(document).on('click', '.delete-btn', function() {
             const id = $(this).data('id');
 
@@ -958,9 +944,6 @@ use Illuminate\Support\Facades\Auth;
             submitBtn.prop('disabled', false);
             submitSpinner.addClass('d-none');
             submitText.text('Simpan');
-
-            // Reset Select2
-            $('.select2').val(null).trigger('change');
         });
     });
 </script>

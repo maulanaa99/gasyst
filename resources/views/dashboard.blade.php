@@ -137,7 +137,6 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="card-title mb-0">Statistik Pemesanan Mobil</h5>
-
                     </div>
                     <div class="btn-group">
                         <button type="button" class="btn btn-outline-primary waves-effect"
@@ -182,8 +181,56 @@
         </div>
     </div>
 
-
-
+    <!-- Chart Perjalanan Driver -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Statistik Perjalanan Driver</h5>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary waves-effect"
+                            id="selectedDriverMonth">Januari</button>
+                        <button type="button"
+                            class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split waves-effect"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="1">Januari</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="2">Februari</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="3">Maret</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="4">April</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);" data-month="5">Mei</a>
+                            </li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);" data-month="6">Juni</a>
+                            </li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);" data-month="7">Juli</a>
+                            </li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="8">Agustus</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="9">September</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="10">Oktober</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="11">November</a></li>
+                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
+                                    data-month="12">Desember</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="driverTripChart" style="min-height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 @endsection
@@ -192,135 +239,247 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    let chart;
+        let pemesananChart;
+        let driverTripChart;
 
-    // Inisialisasi chart
-    function initChart(data) {
-        const options = {
-            series: [{
-                name: 'Total Pemesanan',
-                data: data.values
-            }],
-            chart: {
-                type: 'bar',
-                height: 400,
-                toolbar: {
-                    show: false
-                }
-            },
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    columnWidth: '55%',
-                    borderRadius: 5
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                show: true,
-                width: 2,
-                colors: ['transparent']
-            },
-            xaxis: {
-                categories: data.labels,
-                title: {
-                    text: 'Tanggal'
-                }
-            },
-            yaxis: {
-                title: {
-                    text: 'Jumlah Pemesanan'
-                }
-            },
-            fill: {
-                opacity: 1,
-                colors: ['#696cff']
-            },
-            tooltip: {
-                y: {
-                    formatter: function(val) {
-                        return val + " Pemesanan"
+        // Inisialisasi chart pemesanan mobil
+        function initPemesananChart(data) {
+            const options = {
+                series: [{
+                    name: 'Total Pemesanan',
+                    data: data.values
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 400,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        borderRadius: 5
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: data.labels,
+                    title: {
+                        text: 'Tanggal'
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Jumlah Pemesanan'
+                    }
+                },
+                fill: {
+                    opacity: 1,
+                    colors: ['#696cff']
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + " Pemesanan"
+                        }
+                    }
+                },
+                legend: {
+                    show: true,
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    floating: true,
+                    fontSize: '15px',
+                    fontFamily: 'var(--bs-font-family-base)',
+                    fontWeight: 400,
+                    markers: {
+                        width: 8,
+                        height: 8,
+                        strokeWidth: 0,
+                        strokeColor: '#fff',
+                        radius: 12,
+                        offsetX: 0,
+                        offsetY: 0
+                    },
+                    itemMargin: {
+                        horizontal: 8,
+                        vertical: 0
+                    },
+                    onItemClick: {
+                        toggleDataSeries: true
+                    },
+                    onItemHover: {
+                        highlightDataSeries: true
                     }
                 }
-            },
-            legend: {
-                show: true,
-                position: 'top',
-                horizontalAlign: 'right',
-                floating: true,
-                fontSize: '15px',
-                fontFamily: 'var(--bs-font-family-base)',
-                fontWeight: 400,
-                markers: {
-                    width: 8,
-                    height: 8,
-                    strokeWidth: 0,
-                    strokeColor: '#fff',
-                    radius: 12,
-                    offsetX: 0,
-                    offsetY: 0
-                },
-                itemMargin: {
-                    horizontal: 8,
-                    vertical: 0
-                },
-                onItemClick: {
-                    toggleDataSeries: true
-                },
-                onItemHover: {
-                    highlightDataSeries: true
-                }
+            };
+
+            if (pemesananChart) {
+                pemesananChart.destroy();
             }
-        };
 
-        if (chart) {
-            chart.destroy();
+            pemesananChart = new ApexCharts(document.querySelector("#pemesananMobilChart"), options);
+            pemesananChart.render();
+
+            // Update persentase perubahan
+            const percentageChange = data.percentageChange;
+            const percentageElement = document.getElementById('percentageChange');
+            if (percentageChange > 0) {
+                percentageElement.innerHTML = `<span class="text-success">+${percentageChange}%</span> dari minggu lalu`;
+            } else if (percentageChange < 0) {
+                percentageElement.innerHTML = `<span class="text-danger">${percentageChange}%</span> dari minggu lalu`;
+            } else {
+                percentageElement.innerHTML = `<span class="text-muted">0%</span> dari minggu lalu`;
+            }
         }
 
-        chart = new ApexCharts(document.querySelector("#pemesananMobilChart"), options);
-        chart.render();
+        // Inisialisasi chart perjalanan driver
+        function initDriverTripChart(data) {
+            const options = {
+                series: [{
+                    name: 'Total Perjalanan',
+                    data: data.values
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 400,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        borderRadius: 5
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: data.labels,
+                    title: {
+                        text: 'Nama Driver'
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Total Perjalanan'
+                    }
+                },
+                fill: {
+                    opacity: 1,
+                    colors: ['#696cff']
+                },
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return val + " Perjalanan"
+                        }
+                    }
+                },
+                legend: {
+                    show: true,
+                    position: 'top',
+                    horizontalAlign: 'right',
+                    floating: true,
+                    fontSize: '15px',
+                    fontFamily: 'var(--bs-font-family-base)',
+                    fontWeight: 400,
+                    markers: {
+                        width: 8,
+                        height: 8,
+                        strokeWidth: 0,
+                        strokeColor: '#fff',
+                        radius: 12,
+                        offsetX: 0,
+                        offsetY: 0
+                    },
+                    itemMargin: {
+                        horizontal: 8,
+                        vertical: 0
+                    },
+                    onItemClick: {
+                        toggleDataSeries: true
+                    },
+                    onItemHover: {
+                        highlightDataSeries: true
+                    }
+                }
+            };
 
-        // Update persentase perubahan
-        const percentageChange = data.percentageChange;
-        const percentageElement = document.getElementById('percentageChange');
-        if (percentageChange > 0) {
-            percentageElement.innerHTML = `<span class="text-success">+${percentageChange}%</span> dari minggu lalu`;
-        } else if (percentageChange < 0) {
-            percentageElement.innerHTML = `<span class="text-danger">${percentageChange}%</span> dari minggu lalu`;
-        } else {
-            percentageElement.innerHTML = `<span class="text-muted">0%</span> dari minggu lalu`;
+            if (driverTripChart) {
+                driverTripChart.destroy();
+            }
+
+            driverTripChart = new ApexCharts(document.querySelector("#driverTripChart"), options);
+            driverTripChart.render();
         }
-    }
 
-    // Fungsi untuk mengambil data berdasarkan periode
-    function fetchData(period) {
-        fetch(`/api/pemesanan-mobil/${period}`)
-            .then(response => response.json())
-            .then(data => {
-                initChart(data);
-            })
-            .catch(error => console.error('Error:', error));
-    }
+        // Fungsi untuk mengambil data pemesanan mobil
+        function fetchPemesananData(period) {
+            fetch(`/api/pemesanan-mobil/${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    initPemesananChart(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
-    // Event listener untuk dropdown items
-    document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const month = this.getAttribute('data-month');
-            const monthName = this.textContent;
-            document.getElementById('selectedMonth').textContent = monthName;
-            fetchData(`bulan-${month}`);
+        // Fungsi untuk mengambil data perjalanan driver
+        function fetchDriverTripData(month) {
+            fetch(`/api/driver-trip/${month}`)
+                .then(response => response.json())
+                .then(data => {
+                    initDriverTripChart(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Event listener untuk dropdown items pemesanan mobil
+        document.querySelectorAll('.dropdown-menu:first-of-type .dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const month = this.getAttribute('data-month');
+                const monthName = this.textContent;
+                document.getElementById('selectedMonth').textContent = monthName;
+                fetchPemesananData(`bulan-${month}`);
+            });
         });
+
+        // Event listener untuk dropdown items perjalanan driver
+        document.querySelectorAll('.dropdown-menu:last-of-type .dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const month = this.getAttribute('data-month');
+                const monthName = this.textContent;
+                document.getElementById('selectedDriverMonth').textContent = monthName;
+                fetchDriverTripData(month);
+            });
+        });
+
+        // Set nilai default ke bulan ini
+        const currentMonth = new Date().getMonth() + 1;
+        const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        document.getElementById('selectedMonth').textContent = monthNames[currentMonth - 1];
+        document.getElementById('selectedDriverMonth').textContent = monthNames[currentMonth - 1];
+
+        // Load data bulan ini secara default
+        fetchPemesananData(`bulan-${currentMonth}`);
+        fetchDriverTripData(currentMonth);
     });
-
-    // Set nilai default ke bulan ini
-    const currentMonth = new Date().getMonth() + 1;
-    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    document.getElementById('selectedMonth').textContent = monthNames[currentMonth - 1];
-
-    // Load data bulan ini secara default
-    fetchData(`bulan-${currentMonth}`);
-});
 </script>
 @endpush

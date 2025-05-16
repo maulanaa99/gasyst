@@ -38,7 +38,7 @@
                         </svg>
                     </span>
                 </span>
-                <span class="app-brand-text demo menu-text fw-semibold ms-1">Materialize</span>
+                <span class="app-brand-text demo menu-text fw-semibold ms-1">Sistem Informasi General Affair PT. SRI</span>
             </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-xl-none">
@@ -244,8 +244,7 @@
                                     <div class="d-flex">
                                         <div class="flex-shrink-0 me-3">
                                             <div class="avatar">
-                                                <img src="../../assets/img/avatars/1.png" alt="avatar"
-                                                    class="rounded-circle" />
+                                                <img src="{{ Auth::user()->profile_image ? asset('storage/' . Auth::user()->profile_image) : asset('assets/img/avatars/default.png') }}" alt="Profile Image" class="rounded-circle">
                                             </div>
                                         </div>
                                         <div class="flex-grow-1">
@@ -458,8 +457,13 @@
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                         <div class="avatar-wrapper">
-                            <div class="avatar me-2"><span class="avatar-initial rounded-circle bg-label-success">{{
-                                    Auth::user()->name[0] }}</span></div>
+                            <div class="avatar me-2">
+                                @if(Auth::user()->profile_image)
+                                    <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="rounded-circle">
+                                @else
+                                    <span class="avatar-initial rounded-circle bg-label-success">{{ Auth::user()->name[0] }}</span>
+                                @endif
+                            </div>
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end mt-3 py-2">
@@ -468,9 +472,13 @@
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0 me-2">
                                         <div class="avatar-wrapper">
-                                            <div class="avatar me-2"><span
-                                                    class="avatar-initial rounded-circle bg-label-success">{{
-                                                    Auth::user()->name[0] }}</span></div>
+                                            <div class="avatar me-2">
+                                                @if(Auth::user()->profile_image)
+                                                    <img src="{{ asset('storage/' . Auth::user()->profile_image) }}" alt="Profile Image" class="rounded-circle">
+                                                @else
+                                                    <span class="avatar-initial rounded-circle bg-label-success">{{ Auth::user()->name[0] }}</span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
@@ -484,13 +492,13 @@
                             <div class="dropdown-divider"></div>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="pages-profile-user.html">
-                                <i class="icon-base ri ri-user-3-line icon-22px me-3"></i><span class="align-middle">My
-                                    Profile</span>
+                            <a class="dropdown-item" href="{{ route('profile.index') }}">
+                                <i class="icon-base ri ri-user-3-line icon-22px me-3"></i>
+                                <span class="align-middle">My Profile</span>
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="pages-account-settings-account.html">
+                            <a class="dropdown-item" href="#">
                                 <i class="icon-base ri ri-settings-4-line icon-22px me-3"></i><span
                                     class="align-middle">Settings</span>
                             </a>

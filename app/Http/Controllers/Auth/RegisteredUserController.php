@@ -35,7 +35,17 @@ class RegisteredUserController extends Controller
             'role' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'profile_image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ]);
+
+        // Handle file upload
+        if ($request->hasFile('profile_image')) {
+            $file = $request->file('profile_image');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            // Store in public disk
+            $file->storeAs('profile_images', $filename, 'public');
+            $profileImagePath = 'profile_images/' . $filename;
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -43,6 +53,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'role' => $request->role,
             'password' => Hash::make($request->password),
+            'profile_image' => $profileImagePath ?? null,
         ]);
 
         event(new Registered($user));

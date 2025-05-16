@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit');
     }
 
     /**
@@ -42,7 +43,7 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
+        $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
@@ -56,5 +57,15 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Display the user's profile.
+     */
+    public function index(): View
+    {
+        return view('profile.index', [
+            'user' => Auth::user()
+        ]);
     }
 }
