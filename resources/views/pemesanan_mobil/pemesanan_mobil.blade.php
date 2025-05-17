@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Auth;
 @endphp
 
 @push('page-styles')
-{{--
-<link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-select-bs5/select.bootstrap5.css') }}" /> --}}
-<link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css') }}" />
+
 @endpush
 
 @section('content')
@@ -29,6 +27,7 @@ use Illuminate\Support\Facades\Auth;
             <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
                 <h5 class="card-title mb-0 text-md-start text-center">List Pemesanan Mobil</h5>
             </div>
+
             <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto mt-0">
                 @if(Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'security')
                 <div class="alert alert-info mb-0">
@@ -36,14 +35,11 @@ use Illuminate\Support\Facades\Auth;
                 </div>
                 @endif
                 @if(Auth::user()->role !== 'security')
-                <div class="dt-buttons btn-group flex-wrap">
+                <div class="dt-buttons flex-wrap">
                     <div class="btn-group">
                         <button
                             class="btn btn-sm buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none"
-                            tabindex="0"
-                            aria-controls="DataTables_Table_0"
-                            type="button"
-                            data-bs-toggle="dropdown"
+                            tabindex="0" aria-controls="DataTables_Table_0" type="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
                             <span>
                                 <span class="d-flex align-items-center gap-2">
@@ -75,16 +71,10 @@ use Illuminate\Support\Facades\Auth;
                             <i class="icon-base ri ri-delete-bin-line icon-18px me-sm-1"></i>
                             <span class="d-none d-sm-inline-block">Hapus Terpilih</span>
                         </span>
-                    </button>
-                    <button class="btn btn-sm create-new btn-primary" tabindex="0" aria-controls="DataTables_Table_0"
-                        type="button" data-bs-toggle="modal" data-bs-target="#addPemesananMobilModal">
-                        <span>
-                            <span class="d-flex align-items-center">
-                                <i class="icon-base ri ri-add-line icon-18px me-sm-1"></i>
-                                <span class="d-none d-sm-inline-block">Add New Record</span>
-                            </span>
-                        </span>
-                    </button>
+                        <button type="button" class="btn btn-primary waves-effect waves-light"
+                            onclick="window.location.href='{{ route('surat-jalan.create') }}'">
+                            <span class="icon-base ri ri-add-line icon-18px me-2"></span>Tambah Pemesanan Mobil
+                        </button>
                 </div>
                 @endif
             </div>
@@ -153,8 +143,8 @@ use Illuminate\Support\Facades\Auth;
                             @if((Auth::user()->role === 'superadmin' || Auth::user()->role === 'security') &&
                             !$item->status_jam_berangkat_aktual)
                             <div class="d-flex align-items-center mt-1">
-                                <button type="button" class="btn btn-sm btn-info ms-2"
-                                    onclick="setJamBerangkat({{ $item->id }})">
+                                <button type="button" class="btn btn-sm btn-info ms-2 btn-set-jam-berangkat"
+                                    data-id="{{ $item->id }}">
                                     <i class="icon-base ri ri-time-line"></i>
                                 </button>
                             </div>
@@ -170,8 +160,8 @@ use Illuminate\Support\Facades\Auth;
                             !$item->status_jam_kembali_aktual)
                             <div class="d-flex align-items-center mt-1">
                                 @if($item->jam_berangkat_aktual)
-                                <button type="button" class="btn btn-sm btn-info ms-2"
-                                    onclick="setJamKembali({{ $item->id }})">
+                                <button type="button" class="btn btn-sm btn-info ms-2 btn-set-jam-kembali"
+                                    data-id="{{ $item->id }}">
                                     <i class="icon-base ri ri-time-line"></i>
                                 </button>
                                 @endif
@@ -184,6 +174,9 @@ use Illuminate\Support\Facades\Auth;
                         <td>{{ $item->PIC }}</td>
                         <td>{{ $item->keterangan }}</td>
                         <td class="d-flex gap-2">
+                            <a href="{{ route('surat-jalan.print', $item->id) }}" target="_blank" class="btn btn-icon btn-info btn-sm waves-effect waves-light">
+                                <i class="icon-base ri ri-printer-line icon-18px" style="color: white"></i>
+                            </a>
                             <button type="button"
                                 class="btn btn-icon btn-warning btn-sm btn-edit waves-effect waves-light"
                                 data-bs-toggle="modal" data-bs-target="#editPemesananMobilModal{{ $item->id }}">
@@ -358,132 +351,7 @@ use Illuminate\Support\Facades\Auth;
     </div>
 </div>
 
-<!-- Modal Tambah Pemesanan Mobil -->
-<div class="modal fade" id="addPemesananMobilModal" tabindex="-1" aria-labelledby="addPemesananMobilModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addPemesananMobilModalLabel">Tambah Data Pemesanan Mobil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ route('surat-jalan.store') }}" method="POST" enctype="multipart/form-data"
-                id="addPemesananMobilForm">
-                @csrf
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <div class="form-group">
-                                <label class="form-label">Jenis Pemesanan</label>
-                                <div class="d-flex gap-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="jenis_pemesanan"
-                                            id="jenisKaryawan" value="karyawan" checked>
-                                        <label class="form-check-label" for="jenisKaryawan">
-                                            Karyawan
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="jenis_pemesanan"
-                                            id="jenisDriverOnly" value="driver_only">
-                                        <label class="form-check-label" for="jenisDriverOnly">
-                                            Driver Only
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="tanggal" class="form-label">Tanggal</label>
-                                <input type="date" class="form-control" id="tanggal" name="tanggal"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
-                            <div id="formKaryawan">
-                                <div class="form-group mb-3">
-                                    <label for="id_karyawan" class="form-label">Nama Karyawan</label>
-                                    <select class="form-select select2" id="id_karyawan" name="id_karyawan">
-                                        <option value="">Pilih Karyawan</option>
-                                        @foreach($karyawan as $karyawans)
-                                        <option value="{{ $karyawans->id }}">{{ $karyawans->nik }} | {{
-                                            $karyawans->nama_karyawan }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div id="formDriverOnly" style="display: none;">
-                                <div class="form-group mb-3">
-                                    <label for="id_departemen" class="form-label">Departemen</label>
-                                    <select class="form-select select2" id="id_departemen" name="id_departemen">
-                                        <option value="">Pilih Departemen</option>
-                                        @foreach($departemen as $departemen)
-                                        <option value="{{ $departemen->id }}">{{ $departemen->nama_departemen }}
-                                        </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="lokasi" class="form-label">Lokasi</label>
-                                <select class="form-select select2" id="id_lokasi" name="id_lokasi">
-                                    <option value="">Pilih Lokasi</option>
-                                    @foreach($lokasi as $l)
-                                    <option value="{{ $l->id }}">{{ $l->nama_lokasi }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
 
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="jam_berangkat" class="form-label">Jam Berangkat</label>
-                                <input type="time" class="form-control" id="jam_berangkat" name="jam_berangkat"
-                                    required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="jam_kembali" class="form-label">Jam Kembali</label>
-                                <input type="time" class="form-control" id="jam_kembali" name="jam_kembali" required>
-                            </div>
-
-                            @if(Auth::user()->role === 'superadmin')
-                            <div class="form-group mb-3">
-                                <label for="id_driver" class="form-label">Nama Driver</label>
-                                <select class="form-select select2" id="id_driver" name="id_driver" required>
-                                    <option value="">Pilih Driver</option>
-                                    @foreach($driver as $drivers)
-                                    @if($drivers->status === 'Available')
-                                    <option value="{{ $drivers->id }}">{{ $drivers->nama_driver }}</option>
-                                    @endif
-                                    @endforeach
-                                </select>
-                            </div>
-                            @endif
-
-
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="keterangan" class="form-label">Keterangan</label>
-                            <textarea class="form-control h-px-100" id="keterangan" name="keterangan"
-                                required></textarea>
-                        </div>
-                    </div>
-                    <input type="hidden" class="form-control" id="PIC" name="PIC" value="{{ auth()->user()->name }}"
-                        required>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"
-                            id="submitSpinner"></span>
-                        <span id="submitText">Simpan</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 
 
@@ -656,7 +524,13 @@ use Illuminate\Support\Facades\Auth;
             });
         });
 
-        // Fungsi untuk mengisi jam kembali di tabel
+        // Event listener untuk tombol set jam kembali
+        $(document).on('click', '.btn-set-jam-kembali', function() {
+            const id = $(this).data('id');
+            setJamKembali(id);
+        });
+
+        // Fungsi untuk mengisi jam kembali
         function setJamKembali(id) {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -690,6 +564,7 @@ use Illuminate\Support\Facades\Auth;
                             'X-CSRF-TOKEN': getCsrfToken()
                         },
                         body: JSON.stringify({
+                            jam_kembali: currentTime,
                             jam_kembali_aktual: currentTime
                         })
                     })
@@ -728,6 +603,12 @@ use Illuminate\Support\Facades\Auth;
             });
         }
 
+        // Event listener untuk tombol set jam berangkat
+        $(document).on('click', '.btn-set-jam-berangkat', function() {
+            const id = $(this).data('id');
+            setJamBerangkat(id);
+        });
+
         // Fungsi untuk mengisi jam berangkat
         function setJamBerangkat(id) {
             const now = new Date();
@@ -735,99 +616,69 @@ use Illuminate\Support\Facades\Auth;
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const currentTime = `${hours}:${minutes}`;
 
-            // Cek apakah id_driver ada
-            fetch(`/surat-jalan/${id}/check-driver`, {
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken()
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data.hasDriver) {
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin mengisi jam berangkat aktual?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, isi jam berangkat',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading
                     Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan!',
-                        text: 'Silahkan isi driver terlebih dahulu!'
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
                     });
-                    return;
-                }
 
-                Swal.fire({
-                    title: 'Konfirmasi',
-                    text: 'Apakah Anda yakin ingin mengisi jam berangkat aktual?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, isi jam berangkat',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Tampilkan loading
-                        Swal.fire({
-                            title: 'Memproses...',
-                            allowOutsideClick: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
-                        fetch(`/surat-jalan/${id}/update-jam-berangkat`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': getCsrfToken()
-                            },
-                            body: JSON.stringify({
-                                jam_berangkat: currentTime
-                            })
+                    fetch(`/surat-jalan/${id}/update-jam-berangkat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            jam_berangkat: currentTime,
+                            jam_berangkat_aktual: currentTime
                         })
-                        .then(response => {
-                            if (!response.ok) {
-                                return response.json().then(data => {
-                                    throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
-                                });
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if(data.success) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    text: 'Jam berangkat berhasil diupdate',
-                                    showConfirmButton: false,
-                                    timer: 1500
-                                }).then(() => {
-                                    window.location.reload();
-                                });
-                            } else {
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
                                 throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: error.message || 'Terjadi kesalahan saat mengupdate jam berangkat'
                             });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Jam berangkat berhasil diupdate',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam berangkat');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message || 'Terjadi kesalahan saat mengupdate jam berangkat'
                         });
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Terjadi kesalahan saat memeriksa data driver'
-                });
+                    });
+                }
             });
         }
 

@@ -39,6 +39,10 @@
                                         <i class="icon-base ri ri-calendar-line me-2 icon-24px"></i>
                                         <span class="fw-medium">Joined {{ $user->created_at->format('F Y') }}</span>
                                     </li>
+                                    <li class="list-inline-item">
+                                        <i class="icon-base ri ri-signature-line me-2 icon-24px"></i>
+                                        <span class="fw-medium">Signature</span>
+                                    </li>
                                 </ul>
                             </div>
                             <a href="{{ route('profile.edit') }}" class="btn btn-primary waves-effect waves-light">

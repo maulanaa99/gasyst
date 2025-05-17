@@ -66,32 +66,36 @@ class ChartController extends Controller
         ]);
     }
 
-    public function getDriverTripData($month)
+    public function getDriverTripsData($period)
     {
         try {
-            // Validate month parameter
-            if (!is_numeric($month) || $month < 1 || $month > 12) {
-                return response()->json([
-                    'error' => 'Invalid month parameter. Month must be between 1 and 12.'
-                ], 400);
+            $startDate = null;
+            $endDate = null;
+
+            // Set tanggal berdasarkan period
+            switch ($period) {
+                case 'today':
+                    $startDate = Carbon::now()->startOfDay();
+                    $endDate = Carbon::now()->endOfDay();
+                    break;
+                case 'week':
+                    $startDate = Carbon::now()->startOfWeek();
+                    $endDate = Carbon::now()->endOfWeek();
+                    break;
+                case 'month':
+                    $startDate = Carbon::now()->startOfMonth();
+                    $endDate = Carbon::now()->endOfMonth();
+                    break;
+                default:
+                    return response()->json(['error' => 'Invalid period'], 400);
             }
 
+            // Ambil semua driver
             $drivers = Driver::all();
-            if ($drivers->isEmpty()) {
-                return response()->json([
-                    'labels' => [],
-                    'values' => []
-                ]);
-            }
-
             $labels = [];
             $values = [];
 
-            // Get start and end date of the month
-            $startDate = Carbon::now()->month($month)->startOfMonth();
-            $endDate = Carbon::now()->month($month)->endOfMonth();
-
-            // Get trip data for each driver
+            // Hitung total perjalanan untuk setiap driver
             foreach ($drivers as $driver) {
                 $totalTrips = SuratJalan::where('id_driver', $driver->id)
                     ->whereBetween('tanggal', [$startDate, $endDate])
@@ -107,7 +111,7 @@ class ChartController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error in getDriverTripData: ' . $e->getMessage());
+            Log::error('Error in getDriverTripsData: ' . $e->getMessage());
             Log::error($e->getTraceAsString());
 
             return response()->json([

@@ -6,6 +6,7 @@ use App\Http\Controllers\PemesananDriverController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuratJalanController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\LokasiController;
 use App\Models\Driver;
 use App\Models\Mobil;
 use App\Models\SuratJalan;
@@ -17,7 +18,7 @@ Route::get('/', function () {
 
 // API Routes for Charts
 Route::get('/api/pemesanan-mobil/{period}', [ChartController::class, 'getPemesananMobilData']);
-Route::get('/api/driver-trip/{month}', [ChartController::class, 'getDriverTripData']);
+Route::get('/api/driver-trips/{period}', [ChartController::class, 'getDriverTripsData']);
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
@@ -56,12 +57,21 @@ Route::middleware(['auth'])->group(function () {
         //Surat Jalan
         Route::get('/surat-jalan', [SuratJalanController::class, 'index'])->name('surat-jalan.index');
         Route::post('/surat-jalan', [SuratJalanController::class, 'store'])->name('surat-jalan.store');
+        Route::get('/surat-jalan/create', [SuratJalanController::class, 'create'])->name('surat-jalan.create');
         Route::put('/surat-jalan/{id}', [SuratJalanController::class, 'update'])->name('surat-jalan.update');
         Route::delete('/surat-jalan/{id}', [SuratJalanController::class, 'destroy'])->name('surat-jalan.destroy');
         Route::post('/surat-jalan/{id}/update-jam-kembali', [SuratJalanController::class, 'updateJamKembali'])->name('surat-jalan.update-jam-kembali');
         Route::post('/surat-jalan/{id}/update-jam-berangkat', [SuratJalanController::class, 'updateJamBerangkat'])->name('surat-jalan.update-jam-berangkat');
         Route::get('/surat-jalan/{id}/check-driver', [SuratJalanController::class, 'checkDriver'])->name('surat-jalan.check-driver');
         Route::post('/surat-jalan/delete-selected', [SuratJalanController::class, 'deleteSelected'])->name('surat-jalan.delete-selected');
+        Route::get('/surat-jalan/{id}/print', [SuratJalanController::class, 'print'])->name('surat-jalan.print');
+
+        //Lokasi
+        Route::get('/lokasi', [LokasiController::class, 'index'])->name('lokasi.index');
+        Route::post('/lokasi', [LokasiController::class, 'store'])->name('lokasi.store');
+        Route::put('/lokasi/{id}', [LokasiController::class, 'update'])->name('lokasi.update');
+        Route::delete('/lokasi/{id}', [LokasiController::class, 'destroy'])->name('lokasi.destroy');
+
     });
 
     // Routes for superadmin
@@ -75,5 +85,13 @@ Route::middleware(['auth'])->group(function () {
         // Route::get('/surat-jalan', [SuratJalanController::class, 'index'])->name('surat-jalan.index');
     });
 });
+
+Route::get('/signature/{filename}', function ($filename) {
+    $path = storage_path('app/private/public/signatures/' . $filename);
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+})->name('signature.show');
 
 require __DIR__ . '/auth.php';

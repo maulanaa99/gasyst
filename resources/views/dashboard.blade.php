@@ -81,8 +81,11 @@
     </div>
 
     <div class="row mt-4">
-        <div class="col-xl-8 col-md-6">
+        <div class="col-12 col-md-6">
             <div class="card overflow-hidden">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Driver yang Tersedia</h5>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-sm">
                         <thead>
@@ -130,9 +133,10 @@
         </div>
     </div>
 
-    <!-- Chart Pemesanan Mobil -->
+    <!-- Charts Row -->
     <div class="row mt-4">
-        <div class="col-12">
+        <!-- Chart Pemesanan Mobil -->
+        <div class="col-xl-6">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
@@ -146,7 +150,7 @@
                             data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="visually-hidden">Toggle Dropdown</span>
                         </button>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu" id="pemesananMobilDropdown">
                             <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
                                     data-month="1">Januari</a></li>
                             <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
@@ -179,54 +183,22 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Chart Perjalanan Driver -->
-    <div class="row mt-4">
-        <div class="col-12">
+        <!-- Chart Total Perjalanan Driver -->
+        <div class="col-xl-6">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
-                        <h5 class="card-title mb-0">Statistik Perjalanan Driver</h5>
+                        <h5 class="card-title mb-0">Total Perjalanan Driver</h5>
                     </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-outline-primary waves-effect"
-                            id="selectedDriverMonth">Januari</button>
-                        <button type="button"
-                            class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split waves-effect"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="visually-hidden">Toggle Dropdown</span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="1">Januari</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="2">Februari</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="3">Maret</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="4">April</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);" data-month="5">Mei</a>
-                            </li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);" data-month="6">Juni</a>
-                            </li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);" data-month="7">Juli</a>
-                            </li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="8">Agustus</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="9">September</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="10">Oktober</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="11">November</a></li>
-                            <li><a class="dropdown-item waves-effect" href="javascript:void(0);"
-                                    data-month="12">Desember</a></li>
-                        </ul>
+                    <div class="btn-group" id="driverTripsFilter">
+                        <button type="button" class="btn btn-outline-primary waves-effect active" data-period="today">Hari Ini</button>
+                        <button type="button" class="btn btn-outline-primary waves-effect" data-period="week">Minggu Ini</button>
+                        <button type="button" class="btn btn-outline-primary waves-effect" data-period="month">Bulan Ini</button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div id="driverTripChart" style="min-height: 400px;"></div>
+                    <div id="driverTripsChart" style="min-height: 400px;"></div>
                 </div>
             </div>
         </div>
@@ -240,7 +212,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         let pemesananChart;
-        let driverTripChart;
+        let driverTripsChart;
 
         // Inisialisasi chart pemesanan mobil
         function initPemesananChart(data) {
@@ -342,8 +314,24 @@
             }
         }
 
-        // Inisialisasi chart perjalanan driver
-        function initDriverTripChart(data) {
+        // Inisialisasi chart total perjalanan driver
+        function initDriverTripsChart(data) {
+            // Array warna untuk setiap bar
+            const colors = [
+                '#696cff', // Primary
+                '#ff3e1d', // Danger
+                '#03c3ec', // Info
+                '#71dd37', // Success
+                '#ffab00', // Warning
+                '#8592a3', // Secondary
+                '#ff3e1d', // Danger
+                '#03c3ec', // Info
+                '#71dd37', // Success
+                '#ffab00', // Warning
+                '#8592a3', // Secondary
+                '#696cff', // Primary
+            ];
+
             const options = {
                 series: [{
                     name: 'Total Perjalanan',
@@ -360,7 +348,8 @@
                     bar: {
                         horizontal: false,
                         columnWidth: '55%',
-                        borderRadius: 5
+                        borderRadius: 5,
+                        distributed: true, // Mengaktifkan warna berbeda untuk setiap bar
                     }
                 },
                 dataLabels: {
@@ -375,6 +364,12 @@
                     categories: data.labels,
                     title: {
                         text: 'Nama Driver'
+                    },
+                    labels: {
+                        rotate: -45,
+                        style: {
+                            fontSize: '12px'
+                        }
                     }
                 },
                 yaxis: {
@@ -384,7 +379,7 @@
                 },
                 fill: {
                     opacity: 1,
-                    colors: ['#696cff']
+                    colors: colors // Menggunakan array warna
                 },
                 tooltip: {
                     y: {
@@ -394,41 +389,16 @@
                     }
                 },
                 legend: {
-                    show: true,
-                    position: 'top',
-                    horizontalAlign: 'right',
-                    floating: true,
-                    fontSize: '15px',
-                    fontFamily: 'var(--bs-font-family-base)',
-                    fontWeight: 400,
-                    markers: {
-                        width: 8,
-                        height: 8,
-                        strokeWidth: 0,
-                        strokeColor: '#fff',
-                        radius: 12,
-                        offsetX: 0,
-                        offsetY: 0
-                    },
-                    itemMargin: {
-                        horizontal: 8,
-                        vertical: 0
-                    },
-                    onItemClick: {
-                        toggleDataSeries: true
-                    },
-                    onItemHover: {
-                        highlightDataSeries: true
-                    }
+                    show: false // Menghilangkan legend karena setiap bar memiliki warna berbeda
                 }
             };
 
-            if (driverTripChart) {
-                driverTripChart.destroy();
+            if (driverTripsChart) {
+                driverTripsChart.destroy();
             }
 
-            driverTripChart = new ApexCharts(document.querySelector("#driverTripChart"), options);
-            driverTripChart.render();
+            driverTripsChart = new ApexCharts(document.querySelector("#driverTripsChart"), options);
+            driverTripsChart.render();
         }
 
         // Fungsi untuk mengambil data pemesanan mobil
@@ -441,18 +411,18 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        // Fungsi untuk mengambil data perjalanan driver
-        function fetchDriverTripData(month) {
-            fetch(`/api/driver-trip/${month}`)
+        // Fungsi untuk mengambil data total perjalanan driver
+        function fetchDriverTripsData(period) {
+            fetch(`/api/driver-trips/${period}`)
                 .then(response => response.json())
                 .then(data => {
-                    initDriverTripChart(data);
+                    initDriverTripsChart(data);
                 })
                 .catch(error => console.error('Error:', error));
         }
 
         // Event listener untuk dropdown items pemesanan mobil
-        document.querySelectorAll('.dropdown-menu:first-of-type .dropdown-item').forEach(item => {
+        document.querySelectorAll('#pemesananMobilDropdown .dropdown-item').forEach(item => {
             item.addEventListener('click', function() {
                 const month = this.getAttribute('data-month');
                 const monthName = this.textContent;
@@ -461,13 +431,18 @@
             });
         });
 
-        // Event listener untuk dropdown items perjalanan driver
-        document.querySelectorAll('.dropdown-menu:last-of-type .dropdown-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const month = this.getAttribute('data-month');
-                const monthName = this.textContent;
-                document.getElementById('selectedDriverMonth').textContent = monthName;
-                fetchDriverTripData(month);
+        // Event listener untuk filter total perjalanan driver
+        document.querySelectorAll('#driverTripsFilter .btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('#driverTripsFilter .btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                const period = this.getAttribute('data-period');
+                fetchDriverTripsData(period);
             });
         });
 
@@ -475,11 +450,10 @@
         const currentMonth = new Date().getMonth() + 1;
         const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
         document.getElementById('selectedMonth').textContent = monthNames[currentMonth - 1];
-        document.getElementById('selectedDriverMonth').textContent = monthNames[currentMonth - 1];
 
         // Load data bulan ini secara default
         fetchPemesananData(`bulan-${currentMonth}`);
-        fetchDriverTripData(currentMonth);
+        fetchDriverTripsData('today'); // Load data hari ini secara default
     });
 </script>
 @endpush

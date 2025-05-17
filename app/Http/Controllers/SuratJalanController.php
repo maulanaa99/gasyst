@@ -31,8 +31,34 @@ class SuratJalanController extends Controller
 
     public function store(Request $request)
     {
-        $suratJalan = SuratJalan::create($request->all());
-        return redirect()->route('surat-jalan.index')->with('success', 'Surat Jalan berhasil ditambahkan');
+        try {
+            // Validasi input
+            $validated = $request->validate([
+                'tanggal' => 'required|date',
+                'id_karyawan' => 'nullable|exists:karyawans,id',
+                'id_departemen' => 'nullable|exists:departemens,id',
+                'jam_berangkat' => 'required',
+                'jam_kembali' => 'required',
+                'id_driver' => 'required|exists:drivers,id',
+                'keterangan' => 'required',
+                'PIC' => 'required',
+                'id_lokasi' => 'required|exists:lokasis,id'
+            ]);
+
+            // Buat surat jalan baru
+            $suratJalan = SuratJalan::create($validated);
+
+            // Update status driver menjadi Not Available
+            // $driver = Driver::find($request->id_driver);
+            // if ($driver) {
+            //     $driver->status = 'Not Available';
+            //     $driver->save();
+            // }
+
+            return redirect()->route('surat-jalan.index')->with('success', 'Surat Jalan berhasil ditambahkan');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menambahkan surat jalan: ' . $e->getMessage());
+        }
     }
 
     public function update(Request $request, $id)
@@ -201,5 +227,20 @@ class SuratJalanController extends Controller
                 'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function create()
+    {
+        $karyawan = Karyawan::all();
+        $driver = Driver::all();
+        $departemen = Departemen::all();
+        $lokasi = Lokasi::all();
+        return view('pemesanan_mobil.pemesanan_mobil_add', compact('karyawan', 'driver', 'departemen', 'lokasi'));
+    }
+
+    public function print($id)
+    {
+        $suratJalan = SuratJalan::with(['karyawan', 'departemen', 'lokasi', 'driver'])->findOrFail($id);
+        return view('pemesanan_mobil.print_surat_jalan', compact('suratJalan'));
     }
 }
