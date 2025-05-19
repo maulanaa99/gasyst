@@ -22,6 +22,7 @@ class LokasiController extends Controller
 
             // Validasi input
             $validated = $request->validate([
+                'kode_lokasi' => 'required|string|max:255|unique:lokasis',
                 'nama_lokasi' => 'required|string|max:255',
                 'alamat' => 'required|string',
             ]);

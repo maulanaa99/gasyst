@@ -146,7 +146,7 @@
             <div style="position: relative; height: 120px;">
                 @if(Auth::user()->signature)
                     <div style="position: relative; height: 80px;">
-                        <div style="height: 100%; background-image: url('{{ route('signature.show', 'maulana.png') }}'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
+                        <div style="height: 120%; background-image: url('{{ route('signature.show', 'maulana.png') }}'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); text-align: center; font-size: 12px; color: #000; background-color: rgba(255, 255, 255, 0.7); padding: 2px 5px; border-radius: 3px; white-space: nowrap;">
                             {{ date('d/m/Y H:i:s') }}
                         </div>
@@ -161,12 +161,15 @@
         <div class="signature-box">
             <div>Diketahui oleh,</div>
             <div style="position: relative; height: 120px;">
-                @if(Auth::user()->role === 'security' && Auth::user()->signature)
+                @if($suratJalan->status_approve)
                     <div style="position: relative; height: 80px;">
-                        <div style="height: 100%; background-image: url('{{ route('signature.show', 'maulana.png') }}'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
+                        @if($suratJalan->approvedBy && $suratJalan->approvedBy->signature)
+                            <div style="height: 150%; background-image: url('{{ route('signature.show', basename($suratJalan->approvedBy->signature)) }}'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
+                        @endif
                         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg); text-align: center; font-size: 12px; color: #000; background-color: rgba(255, 255, 255, 0.7); padding: 2px 5px; border-radius: 3px; white-space: nowrap;">
-                            {{ date('d/m/Y H:i:s') }}
+                            {{ $suratJalan->approved_at ? date('d/m/Y H:i:s', strtotime($suratJalan->approved_at)) : '' }}
                         </div>
+                        <div style="position: absolute; top: 50%; left: 30%; transform: translate(-50%, -50%); width: 100px; height: 100px; background-image: url('{{ route('security.cap') }}'); background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
                     </div>
                 @endif
                 <div style="width: 100%; border-top: 1px solid #000; margin-top: 10px;"></div>

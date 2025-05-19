@@ -22,14 +22,14 @@
                                     <div class="d-flex gap-3">
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="jenis_pemesanan"
-                                                id="jenisKaryawan" value="karyawan" checked>
+                                                id="jenisKaryawan" value="Karyawan" checked>
                                             <label class="form-check-label" for="jenisKaryawan">
                                                 Karyawan
                                             </label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="jenis_pemesanan"
-                                                id="jenisDriverOnly" value="driver_only">
+                                                id="jenisDriverOnly" value="Driver Only">
                                             <label class="form-check-label" for="jenisDriverOnly">
                                                 Driver Only
                                             </label>
@@ -44,22 +44,30 @@
                                 <input type="date" class="form-control" id="tanggal" name="tanggal"
                                     value="{{ date('Y-m-d') }}" required>
                             </div>
+                            <div class="form-group mb-3">
+                                <label for="no_surat_jalan" class="form-label">Nomor Surat Jalan</label>
+                                <input type="text" class="form-control" id="no_surat_jalan" name="no_surat_jalan"
+                                    value="SJ-{{ date('Ymd') }}-{{ str_pad(App\Models\SuratJalan::count() + 1, 4, '0', STR_PAD_LEFT) }}"
+                                    readonly>
+                            </div>
                             <div id="formKaryawan">
                                 <div class="form-group mb-3">
                                     <label for="id_karyawan" class="form-label">Nama Karyawan</label>
-                                    <select class="form-select select2" id="id_karyawan" name="id_karyawan">
-                                        <option value="">Pilih Karyawan</option>
-                                        @foreach($karyawan as $karyawans)
-                                        <option value="{{ $karyawans->id }}">{{ $karyawans->nik }} | {{
-                                            $karyawans->nama_karyawan }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select select2" id="id_karyawan" name="karyawan_id[]"
+                                            multiple required>
+                                            @foreach($karyawan as $karyawans)
+                                            <option value="{{ $karyawans->id }}">{{ $karyawans->nik }} | {{
+                                                $karyawans->nama_karyawan }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div id="formDriverOnly" style="display: none;">
                                 <div class="form-group mb-3">
                                     <label for="id_departemen" class="form-label">Departemen</label>
-                                    <select class="form-select select2" id="id_departemen" name="id_departemen">
+                                    <select class="form-select select2" id="id_departemen" name="id_departemen" required>
                                         <option value="">Pilih Departemen</option>
                                         @foreach($departemen as $departemen)
                                         <option value="{{ $departemen->id }}">{{ $departemen->nama_departemen }}
@@ -98,10 +106,21 @@
                                 <textarea class="form-control h-px-100" id="keterangan" name="keterangan"
                                     required></textarea>
                             </div>
+                            <div class="form-group mb-3">
+                                <label for="id_lokasi" class="form-label">Nama Lokasi</label>
+                                <div class="input-group">
+                                    <select class="form-select select2" id="id_lokasi" name="lokasi_id[]"
+                                        multiple required>
+                                        @foreach($lokasi as $lokasis)
+                                        <option value="{{ $lokasis->id }}">{{ $lokasis->kode_lokasi }} | {{
+                                            $lokasis->nama_lokasi }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <input type="hidden" class="form-control" id="PIC" name="PIC" value="{{ auth()->user()->name }}"
                             required>
-                        <input type="hidden" id="id_lokasi" name="id_lokasi" required>
                     </div>
                     <div class="card-footer">
                         <button type="button" class="btn btn-secondary" onclick="window.history.back()">Kembali</button>
@@ -124,15 +143,21 @@
                     @csrf
                     <div class="card-body">
                         <div class="form-group mb-3">
-                            <label for="nama_lokasi" class="form-label">Nama Lokasi</label>
+                            <label for="kode_lokasi" class="form-label">Kode Lokasi</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="nama_lokasi" name="nama_lokasi" required>
+                                <input type="text" class="form-control" id="kode_lokasi" name="kode_lokasi" required>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                     data-bs-target="#lokasiModal">
                                     <i class="icon-base ri ri-contacts-book-3-line"></i>
                                 </button>
                             </div>
                             <input type="hidden" id="id_lokasi" name="id_lokasi">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="nama_lokasi" class="form-label">Nama Lokasi</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="nama_lokasi" name="nama_lokasi" required>
+                            </div>
                         </div>
                         <div class="form-group mb-3">
                             <label for="alamat" class="form-label">Alamat Lokasi</label>
@@ -143,9 +168,9 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-primary w-100" id="submitLokasiBtn">
-                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"
-                                        id="submitLokasiSpinner"></span>
-                                        <i class="icon-base ri ri-save-line ms-1"></i>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"
+                                        aria-hidden="true" id="submitLokasiSpinner"></span>
+                                    <i class="icon-base ri ri-save-line ms-1"></i>
                                     <span id="submitLokasiText"> Simpan Lokasi</span>
                                 </button>
                             </div>
@@ -181,6 +206,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Kode Lokasi</th>
                                 <th>Nama Lokasi</th>
                                 <th>Alamat</th>
                                 <th>Keterangan</th>
@@ -191,19 +217,18 @@
                             @foreach($lokasi as $l)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
+                                <td>{{ $l->kode_lokasi }}</td>
                                 <td>{{ $l->nama_lokasi }}</td>
                                 <td>{{ $l->alamat }}</td>
                                 <td>{{ $l->keterangan }}</td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-primary select-lokasi"
-                                        data-id="{{ $l->id }}"
-                                        data-nama="{{ $l->nama_lokasi }}"
-                                        data-alamat="{{ $l->alamat }}">
+                                        data-id="{{ $l->id }}" data-kode="{{ $l->kode_lokasi }}"
+                                        data-nama="{{ $l->nama_lokasi }}" data-alamat="{{ $l->alamat }}">
                                         <i class="icon-base ri ri-check-line"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-danger delete-lokasi"
-                                        data-id="{{ $l->id }}"
-                                        data-nama="{{ $l->nama_lokasi }}">
+                                        data-id="{{ $l->id }}" data-nama="{{ $l->nama_lokasi }}">
                                         <i class="icon-base ri ri-delete-bin-line"></i>
                                     </button>
                                 </td>
@@ -219,6 +244,8 @@
         </div>
     </div>
 </div>
+
+
 @endsection
 
 @push('page-script')
@@ -226,12 +253,16 @@
     // Script untuk toggle form karyawan/driver only
     document.querySelectorAll('input[name="jenis_pemesanan"]').forEach(radio => {
         radio.addEventListener('change', function() {
-            if (this.value === 'karyawan') {
+            if (this.value === 'Karyawan') {
                 document.getElementById('formKaryawan').style.display = 'block';
                 document.getElementById('formDriverOnly').style.display = 'none';
+                document.getElementById('id_karyawan').required = true;
+                document.getElementById('id_departemen').required = false;
             } else {
                 document.getElementById('formKaryawan').style.display = 'none';
                 document.getElementById('formDriverOnly').style.display = 'block';
+                document.getElementById('id_karyawan').required = false;
+                document.getElementById('id_departemen').required = true;
             }
         });
     });
@@ -240,9 +271,36 @@
     document.getElementById('addPemesananMobilForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Validasi form
-        const idLokasi = document.getElementById('id_lokasi').value;
-        if (!idLokasi) {
+        const jenisPemesanan = document.querySelector('input[name="jenis_pemesanan"]:checked').value;
+        const karyawanSelect = document.getElementById('id_karyawan');
+        const departemenSelect = document.getElementById('id_departemen');
+        const lokasiSelect = document.getElementById('id_lokasi');
+
+        // Validasi berdasarkan jenis pemesanan
+        if (jenisPemesanan === 'Karyawan') {
+            if (!karyawanSelect.value) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Silakan pilih karyawan terlebih dahulu',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+        } else {
+            if (!departemenSelect.value) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Silakan pilih departemen terlebih dahulu',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+        }
+
+        // Validasi lokasi
+        if (!lokasiSelect.value) {
             Swal.fire({
                 title: 'Error!',
                 text: 'Silakan pilih lokasi terlebih dahulu',
@@ -271,9 +329,9 @@
         const rows = document.querySelectorAll('#lokasiTableBody tr');
 
         rows.forEach(row => {
-            const namaLokasi = row.cells[0].textContent.toLowerCase();
-            const alamatLokasi = row.cells[1].textContent.toLowerCase();
-            const keterangan = row.cells[2].textContent.toLowerCase();
+            const namaLokasi = row.cells[1].textContent.toLowerCase();
+            const alamatLokasi = row.cells[2].textContent.toLowerCase();
+            const keterangan = row.cells[3].textContent.toLowerCase();
 
             if (namaLokasi.includes(searchTerm) ||
                 alamatLokasi.includes(searchTerm) ||
@@ -289,10 +347,12 @@
     document.querySelectorAll('.select-lokasi').forEach(button => {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
+            const kode = this.getAttribute('data-kode');
             const nama = this.getAttribute('data-nama');
             const alamat = this.getAttribute('data-alamat');
 
-            // Set nilai input nama lokasi dan id_lokasi
+            // Set nilai input kode lokasi, nama lokasi, dan id_lokasi
+            document.getElementById('kode_lokasi').value = kode;
             document.getElementById('nama_lokasi').value = nama;
             document.getElementById('alamat').value = alamat;
             document.getElementById('id_lokasi').value = id;
@@ -316,6 +376,7 @@
 
     // Script untuk menampilkan/menyembunyikan button tambah lokasi
     function checkLokasiButton() {
+        const kodeLokasi = document.getElementById('kode_lokasi').value;
         const namaLokasi = document.getElementById('nama_lokasi').value;
         const alamat = document.getElementById('alamat').value;
         const idLokasi = document.getElementById('id_lokasi').value;
@@ -326,7 +387,7 @@
             submitBtn.style.display = 'none';
         }
         // Jika form diisi manual (tidak ada id_lokasi), tampilkan button
-        else if (namaLokasi || alamat) {
+        else if (kodeLokasi || namaLokasi || alamat) {
             submitBtn.style.display = 'block';
         }
         // Jika form kosong, sembunyikan button
@@ -336,6 +397,7 @@
     }
 
     // Event listener untuk input fields
+    document.getElementById('kode_lokasi').addEventListener('input', checkLokasiButton);
     document.getElementById('nama_lokasi').addEventListener('input', checkLokasiButton);
     document.getElementById('alamat').addEventListener('input', checkLokasiButton);
 
@@ -389,6 +451,60 @@
                     toastr.error('Terjadi kesalahan saat menghapus lokasi');
                 });
             }
+        });
+    });
+
+    // Script untuk menambah form karyawan baru
+    document.getElementById('addKaryawanBtn').addEventListener('click', function() {
+        const additionalKaryawan = document.getElementById('additionalKaryawan');
+        const karyawanCount = additionalKaryawan.children.length;
+
+        // Buat div container baru
+        const div = document.createElement('div');
+        div.className = 'form-group mb-3';
+        div.innerHTML = `
+            <div class="input-group">
+                <select class="form-select select2" name="karyawan_id[]" multiple>
+                    @foreach($karyawan as $karyawans)
+                    <option value="{{ $karyawans->id }}">{{ $karyawans->nik }} | {{ $karyawans->nama_karyawan }}</option>
+                    @endforeach
+                </select>
+                <button type="button" class="btn btn-danger remove-karyawan">
+                    <i class="icon-base ri ri-delete-bin-line"></i>
+                </button>
+            </div>
+        `;
+
+        // Tambahkan ke container
+        additionalKaryawan.appendChild(div);
+
+        // Inisialisasi select2 pada select baru
+        $(div.querySelector('select')).select2({
+            width: '100%',
+            placeholder: 'Pilih Karyawan'
+        });
+
+        // Tambahkan event listener untuk tombol hapus
+        div.querySelector('.remove-karyawan').addEventListener('click', function() {
+            div.remove();
+        });
+    });
+
+    // Inisialisasi select2 untuk karyawan pertama
+    $(document).ready(function() {
+        $('#id_karyawan').select2({
+            width: '100%',
+            placeholder: 'Pilih Karyawan'
+        });
+
+        $('#id_departemen').select2({
+            width: '100%',
+            placeholder: 'Pilih Departemen'
+        });
+
+        $('#id_lokasi').select2({
+            width: '100%',
+            placeholder: 'Pilih Lokasi'
         });
     });
 </script>

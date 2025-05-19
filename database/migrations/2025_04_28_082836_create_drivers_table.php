@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('id_mobil')->constrained('mobils')->onDelete('cascade');
             $table->foreignId('id_karyawan')->constrained('karyawans')->onDelete('cascade');
             $table->string('driver_image')->nullable();
-            $table->string('status');
+            $table->string('status')->nullable();
             $table->timestamps();
         });
     }

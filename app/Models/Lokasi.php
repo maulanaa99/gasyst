@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Lokasi extends Model
 {
     protected $table = 'lokasis';
-    protected $fillable = ['nama_lokasi', 'alamat', 'kota', 'provinsi', 'kode_pos', 'no_telp'];
+    protected $fillable = ['kode_lokasi', 'nama_lokasi', 'alamat', 'kota', 'provinsi', 'kode_pos', 'no_telp'];
 
     public function suratJalan()
     {
-        return $this->hasMany(SuratJalan::class, 'id_lokasi');
+        return $this->belongsToMany(SuratJalan::class, 'surat_jalan_detail', 'lokasi_id', 'surat_jalan_id')
+            ->withTimestamps();
     }
 }

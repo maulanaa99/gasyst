@@ -89,6 +89,7 @@ use Illuminate\Support\Facades\Auth;
                         <th>No</th>
                         <th>Tanggal</th>
                         <th>Nama Karyawan</th>
+                        <th>Kode Lokasi</th>
                         <th>Tujuan</th>
                         <th>Jam Berangkat</th>
                         <th>Jam Kembali</th>
@@ -104,36 +105,29 @@ use Illuminate\Support\Facades\Auth;
                         <td><input type="checkbox" class="form-check-input item-checkbox" data-id="{{ $item->id }}">
                         </td>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ date('d/m/y', strtotime($item->tanggal))
-                            }}</td>
+                        <td>{{ date('d/m/y', strtotime($item->tanggal)) }}</td>
                         <td>
-                            @if($item->id_karyawan)
-                            <div class="d-flex justify-content-start align-items-center user-name">
-                                <div class="avatar-wrapper">
-                                    <div class="avatar me-2"><span
-                                            class="avatar-initial rounded-circle bg-label-success">{{
-                                            $item->karyawan->nama_karyawan[0]}}</span></div>
-                                </div>
-                                <div class="d-flex flex-column"><span
-                                        class="emp_name text-truncate text-heading fw-medium">{{
-                                        $item->karyawan->nama_karyawan}}</span><small class="emp_post text-truncate">{{
-                                        $item->karyawan->departemen}}</small></div>
-                            </div>
+                            @if($item->jenis_pemesanan === 'Driver Only')
+                                <span class="badge rounded-pill  bg-label-info">Driver Only</span>
+                            @elseif($item->karyawans->count() > 0)
+                                {{ $item->karyawans->pluck('nama_karyawan')->join(', ') }}
                             @else
-                            <div class="d-flex justify-content-start align-items-center user-name">
-                                <div class="avatar-wrapper">
-                                    <div class="avatar me-2"><span
-                                            class="avatar-initial rounded-circle bg-label-success">DO</span></div>
-                                </div>
-                                <div class="d-flex flex-column"><span
-                                        class="emp_name text-truncate text-heading fw-medium">Driver Only</span>
-                                    <small class="emp_post text-truncate">{{
-                                        $item->departemen->nama_departemen}}</small>
-                                </div>
-                            </div>
+                                -
                             @endif
                         </td>
-                        <td class="text-nowrap" style="white-space: nowrap;">{{ $item->lokasi->nama_lokasi ?? '-' }}
+                        <td>
+                            @if($item->lokasis->count() > 0)
+                                {{ $item->lokasis->unique('id')->pluck('kode_lokasi')->join(', ') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                        <td>
+                            @if($item->lokasis->count() > 0)
+                                {{ $item->lokasis->unique('id')->pluck('nama_lokasi')->join(', ') }}
+                            @else
+                                -
+                            @endif
                         </td>
                         <td>
                             @if($item->jam_berangkat_aktual)
@@ -174,7 +168,15 @@ use Illuminate\Support\Facades\Auth;
                         <td>{{ $item->PIC }}</td>
                         <td>{{ $item->keterangan }}</td>
                         <td class="d-flex gap-2">
-                            <a href="{{ route('surat-jalan.print', $item->id) }}" target="_blank" class="btn btn-icon btn-info btn-sm waves-effect waves-light">
+                            @if(Auth::user()->role === 'security' && !$item->status_approve)
+                            <button type="button"
+                                class="btn btn-icon btn-success btn-sm waves-effect waves-light btn-approve"
+                                data-id="{{ $item->id }}">
+                                <i class="icon-base ri ri-check-line icon-18px" style="color: white"></i>
+                            </button>
+                            @endif
+                            <a href="{{ route('surat-jalan.print', $item->id) }}" target="_blank"
+                                class="btn btn-icon btn-info btn-sm waves-effect waves-light">
                                 <i class="icon-base ri ri-printer-line icon-18px" style="color: white"></i>
                             </a>
                             <button type="button"
@@ -237,96 +239,89 @@ use Illuminate\Support\Facades\Auth;
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="tanggal{{ $item->id }}" class="form-label">Tanggal</label>
+                                                <input type="date" class="form-control" id="tanggal{{ $item->id }}"
+                                                    name="tanggal" value="{{ $item->tanggal }}" required>
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="no_surat_jalan{{ $item->id }}" class="form-label">Nomor
+                                                    Surat Jalan</label>
+                                                <input type="text" class="form-control"
+                                                    id="no_surat_jalan{{ $item->id }}" name="no_surat_jalan"
+                                                    value="{{ $item->no_surat_jalan }}" readonly>
+                                            </div>
+                                            <div id="formKaryawan{{ $item->id }}"
+                                                style="display: {{ $item->id_karyawan ? 'block' : 'none' }}">
                                                 <div class="form-group mb-3">
-                                                    <label for="tanggal{{ $item->id }}"
-                                                        class="form-label">Tanggal</label>
-                                                    <input type="date" class="form-control" id="tanggal{{ $item->id }}"
-                                                        name="tanggal" value="{{ $item->tanggal }}" required>
-                                                </div>
-                                                <div id="formKaryawan{{ $item->id }}"
-                                                    style="display: {{ $item->id_karyawan ? 'block' : 'none' }}">
-                                                    <div class="form-group mb-3">
-                                                        <label for="id_karyawan{{ $item->id }}" class="form-label">Nama
-                                                            Karyawan</label>
+                                                    <label for="id_karyawan{{ $item->id }}" class="form-label">Nama
+                                                        Karyawan</label>
+                                                    <div class="input-group">
                                                         <select class="form-select select2"
-                                                            id="id_karyawan{{ $item->id }}" name="id_karyawan">
-                                                            <option value="">Pilih Karyawan</option>
+                                                            id="id_karyawan{{ $item->id }}" name="karyawan_id[]"
+                                                            multiple required>
                                                             @foreach($karyawan as $k)
-                                                            <option value="{{ $k->id }}" {{ $item->id_karyawan == $k->id
-                                                                ?
-                                                                'selected' : '' }}>
+                                                            <option value="{{ $k->id }}" {{ in_array($k->id,
+                                                                $item->karyawans->pluck('id')->toArray()) ? 'selected' :
+                                                                '' }}>
                                                                 {{ $k->nik }} | {{ $k->nama_karyawan }}
                                                             </option>
                                                             @endforeach
                                                         </select>
                                                     </div>
                                                 </div>
-                                                <div id="formDriverOnly{{ $item->id }}"
-                                                    style="display: {{ !$item->id_karyawan ? 'block' : 'none' }}">
-                                                    <div class="form-group mb-3">
-                                                        <label for="departemen{{ $item->id }}"
-                                                            class="form-label">Departemen</label>
-                                                        <select class="form-select select2"
-                                                            id="id_departemen{{ $item->id }}" name="id_departemen">
-                                                            <option value="">Pilih Departemen</option>
-                                                            @foreach($departemen as $d)
-                                                            <option value="{{ $d->id }}" {{ $item->id_departemen ==
-                                                                $d->id ? 'selected' : '' }}>
-                                                                {{ $d->nama_departemen }}
-                                                            </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                </div>
+                                            </div>
+                                            <div id="formDriverOnly{{ $item->id }}"
+                                                style="display: {{ !$item->id_karyawan ? 'block' : 'none' }}">
                                                 <div class="form-group mb-3">
-                                                    <label for="lokasi{{ $item->id }}" class="form-label">Lokasi</label>
-                                                    <select class="form-select select2" id="id_lokasi{{ $item->id }}"
-                                                        name="id_lokasi">
-                                                        <option value="">Pilih Lokasi</option>
-                                                        @foreach($lokasi as $l)
-                                                        <option value="{{ $l->id }}" {{ $item->id_lokasi == $l->id ?
-                                                            'selected' : '' }}>
-                                                            {{ $l->nama_lokasi }}
+                                                    <label for="id_departemen{{ $item->id }}"
+                                                        class="form-label">Departemen</label>
+                                                    <select class="form-select select2"
+                                                        id="id_departemen{{ $item->id }}" name="id_departemen">
+                                                        <option value="">Pilih Departemen</option>
+                                                        @foreach($departemen as $d)
+                                                        <option value="{{ $d->id }}" {{ $item->id_departemen ==
+                                                            $d->id ? 'selected' : '' }}>
+                                                            {{ $d->nama_departemen }}
                                                         </option>
                                                         @endforeach
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group mb-3">
-                                                    <label for="jam_berangkat{{ $item->id }}" class="form-label">Jam
-                                                        Berangkat</label>
-                                                    <input type="time" class="form-control"
-                                                        id="jam_berangkat{{ $item->id }}" name="jam_berangkat"
-                                                        value="{{ $item->jam_berangkat }}" required>
-                                                </div>
-                                                <div class="form-group mb-3">
-                                                    <label for="jam_kembali{{ $item->id }}" class="form-label">Jam
-                                                        Kembali</label>
-                                                    <input type="time" class="form-control"
-                                                        id="jam_kembali{{ $item->id }}" name="jam_kembali"
-                                                        value="{{ $item->jam_kembali }}" required>
-                                                </div>
-                                                @if(Auth::user()->role === 'superadmin')
-                                                <div class="form-group mb-3">
-                                                    <label for="id_driver{{ $item->id }}" class="form-label">Nama
-                                                        Driver</label>
-                                                    <select class="form-select select2" id="id_driver{{ $item->id }}"
-                                                        name="id_driver" required>
-                                                        <option value="">Pilih Driver</option>
-                                                        @foreach($driver as $d)
-                                                        @if($d->status === 'Available' || $item->id_driver == $d->id)
-                                                        <option value="{{ $d->id }}" {{ $item->id_driver == $d->id ?
-                                                            'selected' : '' }}>
-                                                            {{ $d->nama_driver }}
-                                                        </option>
-                                                        @endif
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                @endif
+
+                                            <div class="form-group mb-3">
+                                                <label for="jam_berangkat{{ $item->id }}" class="form-label">Jam
+                                                    Berangkat</label>
+                                                <input type="time" class="form-control"
+                                                    id="jam_berangkat{{ $item->id }}" name="jam_berangkat"
+                                                    value="{{ $item->jam_berangkat }}" required>
                                             </div>
+                                            <div class="form-group mb-3">
+                                                <label for="jam_kembali{{ $item->id }}" class="form-label">Jam
+                                                    Kembali</label>
+                                                <input type="time" class="form-control" id="jam_kembali{{ $item->id }}"
+                                                    name="jam_kembali" value="{{ $item->jam_kembali }}" required>
+                                            </div>
+
+                                            @if(Auth::user()->role === 'superadmin')
+                                            <div class="form-group mb-3">
+                                                <label for="id_driver{{ $item->id }}" class="form-label">Nama
+                                                    Driver</label>
+                                                <select class="form-select select2" id="id_driver{{ $item->id }}"
+                                                    name="id_driver" required>
+                                                    <option value="">Pilih Driver</option>
+                                                    @foreach($driver as $d)
+                                                    @if($d->status === 'Available' || $item->id_driver == $d->id)
+                                                    <option value="{{ $d->id }}" {{ $item->id_driver == $d->id ?
+                                                        'selected' : '' }}>
+                                                        {{ $d->nama_driver }}
+                                                    </option>
+                                                    @endif
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            @endif
+
                                             <div class="form-group mb-3">
                                                 <label for="keterangan{{ $item->id }}"
                                                     class="form-label">Keterangan</label>
@@ -334,11 +329,29 @@ use Illuminate\Support\Facades\Auth;
                                                     name="keterangan" required>{{ $item->keterangan }}</textarea>
                                             </div>
                                         </div>
+                                        <div class="form-group mb-3">
+                                            <label for="id_lokasi{{ $item->id }}" class="form-label">Lokasi</label>
+                                            <select class="form-select select2" id="id_lokasi{{ $item->id }}"
+                                                name="lokasi_id[]" multiple required>
+                                                @foreach($lokasi as $l)
+                                                <option value="{{ $l->id }}" {{ in_array($l->id,
+                                                    $item->lokasis->pluck('id')->toArray()) ? 'selected' : '' }}>
+                                                    {{ $l->nama_lokasi }}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <input type="hidden" class="form-control" id="PIC{{ $item->id }}" name="PIC"
+                                            value="{{ auth()->user()->name }}" required>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
                                             data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <span class="spinner-border spinner-border-sm d-none" role="status"
+                                                aria-hidden="true" id="submitSpinner{{ $item->id }}"></span>
+                                            <span id="submitText{{ $item->id }}">Simpan Perubahan</span>
+                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -795,6 +808,72 @@ use Illuminate\Support\Facades\Auth;
             submitBtn.prop('disabled', false);
             submitSpinner.addClass('d-none');
             submitText.text('Simpan');
+        });
+
+        // Handle approve button click
+        $(document).on('click', '.btn-approve', function() {
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin menyetujui surat jalan ini?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, setujui',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(`/surat-jalan/${id}/approve`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.message || 'Terjadi kesalahan saat menyetujui surat jalan');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Surat jalan berhasil disetujui',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat menyetujui surat jalan');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message || 'Terjadi kesalahan saat menyetujui surat jalan'
+                        });
+                    });
+                }
+            });
         });
     });
 </script>

@@ -65,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/surat-jalan/{id}/check-driver', [SuratJalanController::class, 'checkDriver'])->name('surat-jalan.check-driver');
         Route::post('/surat-jalan/delete-selected', [SuratJalanController::class, 'deleteSelected'])->name('surat-jalan.delete-selected');
         Route::get('/surat-jalan/{id}/print', [SuratJalanController::class, 'print'])->name('surat-jalan.print');
+        Route::post('/surat-jalan/{id}/approve', [SuratJalanController::class, 'approve'])->middleware(['auth', 'role:security'])->name('surat-jalan.approve');
 
         //Lokasi
         Route::get('/lokasi', [LokasiController::class, 'index'])->name('lokasi.index');
@@ -87,11 +88,27 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/signature/{filename}', function ($filename) {
+    $filename = str_replace('signatures/', '', $filename);
     $path = storage_path('app/private/public/signatures/' . $filename);
+
+    \Illuminate\Support\Facades\Log::info('Signature Request', [
+        'original_filename' => $filename,
+        'path' => $path,
+        'exists' => file_exists($path)
+    ]);
+
     if (!file_exists($path)) {
         abort(404);
     }
     return response()->file($path);
-})->name('signature.show');
+})->name('signature.show')->where('filename', '.*');
+
+Route::get('/security-cap', function () {
+    $path = storage_path('app/private/public/signatures/Cap SR.png');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+})->name('security.cap');
 
 require __DIR__ . '/auth.php';
