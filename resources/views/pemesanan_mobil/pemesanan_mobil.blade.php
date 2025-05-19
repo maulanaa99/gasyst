@@ -89,7 +89,6 @@ use Illuminate\Support\Facades\Auth;
                         <th>No</th>
                         <th>Tanggal</th>
                         <th>Nama Karyawan</th>
-                        <th>Kode Lokasi</th>
                         <th>Tujuan</th>
                         <th>Jam Berangkat</th>
                         <th>Jam Kembali</th>
@@ -118,13 +117,6 @@ use Illuminate\Support\Facades\Auth;
                         <td>
                             @if($item->lokasis->count() > 0)
                                 {{ $item->lokasis->unique('id')->pluck('kode_lokasi')->join(', ') }}
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td>
-                            @if($item->lokasis->count() > 0)
-                                {{ $item->lokasis->unique('id')->pluck('nama_lokasi')->join(', ') }}
                             @else
                                 -
                             @endif
