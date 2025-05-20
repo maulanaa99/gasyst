@@ -29,11 +29,7 @@ use Illuminate\Support\Facades\Auth;
             </div>
 
             <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto mt-0">
-                @if(Auth::user()->role !== 'superadmin' && Auth::user()->role !== 'security')
-                <div class="alert alert-info mb-0">
-                    Menampilkan data untuk PIC: {{ Auth::user()->name }}
-                </div>
-                @endif
+
                 @if(Auth::user()->role !== 'security')
                 <div class="dt-buttons flex-wrap">
                     <div class="btn-group">
@@ -81,6 +77,27 @@ use Illuminate\Support\Facades\Auth;
         </div>
     </div>
     <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="start_date" class="form-label">Tanggal Mulai</label>
+                            <input type="date" class="form-control" id="start_date" value="{{ date('Y-m-d') }}">
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="end_date" class="form-label">Tanggal Akhir</label>
+                            <input type="date" class="form-control" id="end_date" value="{{ date('Y-m-d') }}">
+                        </div>
+                    </div>
+                    {{-- <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary" id="filter_date">Filter</button>
+                    </div> --}}
+                </div>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-bordered table-hover" id="pemesananMobilTable">
                 <thead>
@@ -209,8 +226,7 @@ use Illuminate\Support\Facades\Auth;
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="radio"
                                                                 name="jenis_pemesanan" id="jenisKaryawan{{ $item->id }}"
-                                                                value="karyawan" {{ $item->id_karyawan ? 'checked' : ''
-                                                            }}>
+                                                                value="Karyawan" {{ $item->jenis_pemesanan === 'Karyawan' ? 'checked' : '' }}>
                                                             <label class="form-check-label"
                                                                 for="jenisKaryawan{{ $item->id }}">
                                                                 Karyawan
@@ -219,8 +235,8 @@ use Illuminate\Support\Facades\Auth;
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="radio"
                                                                 name="jenis_pemesanan"
-                                                                id="jenisDriverOnly{{ $item->id }}" value="driver_only"
-                                                                {{ !$item->id_karyawan ? 'checked' : '' }}>
+                                                                id="jenisDriverOnly{{ $item->id }}" value="Driver Only"
+                                                                {{ $item->jenis_pemesanan === 'Driver Only' ? 'checked' : '' }}>
                                                             <label class="form-check-label"
                                                                 for="jenisDriverOnly{{ $item->id }}">
                                                                 Driver Only
@@ -244,14 +260,14 @@ use Illuminate\Support\Facades\Auth;
                                                     value="{{ $item->no_surat_jalan }}" readonly>
                                             </div>
                                             <div id="formKaryawan{{ $item->id }}"
-                                                style="display: {{ $item->id_karyawan ? 'block' : 'none' }}">
+                                                style="display: {{ $item->jenis_pemesanan === 'Karyawan' ? 'block' : 'none' }}">
                                                 <div class="form-group mb-3">
                                                     <label for="id_karyawan{{ $item->id }}" class="form-label">Nama
                                                         Karyawan</label>
                                                     <div class="input-group">
                                                         <select class="form-select select2"
                                                             id="id_karyawan{{ $item->id }}" name="karyawan_id[]"
-                                                            multiple required>
+                                                            multiple {{ $item->jenis_pemesanan === 'Karyawan' ? 'required' : '' }}>
                                                             @foreach($karyawan as $k)
                                                             <option value="{{ $k->id }}" {{ in_array($k->id,
                                                                 $item->karyawans->pluck('id')->toArray()) ? 'selected' :
@@ -264,12 +280,13 @@ use Illuminate\Support\Facades\Auth;
                                                 </div>
                                             </div>
                                             <div id="formDriverOnly{{ $item->id }}"
-                                                style="display: {{ !$item->id_karyawan ? 'block' : 'none' }}">
+                                                style="display: {{ $item->jenis_pemesanan === 'Driver Only' ? 'block' : 'none' }}">
                                                 <div class="form-group mb-3">
                                                     <label for="id_departemen{{ $item->id }}"
                                                         class="form-label">Departemen</label>
                                                     <select class="form-select select2"
-                                                        id="id_departemen{{ $item->id }}" name="id_departemen">
+                                                        id="id_departemen{{ $item->id }}" name="id_departemen"
+                                                        {{ $item->jenis_pemesanan === 'Driver Only' ? 'required' : '' }}>
                                                         <option value="">Pilih Departemen</option>
                                                         @foreach($departemen as $d)
                                                         <option value="{{ $d->id }}" {{ $item->id_departemen ==
@@ -380,6 +397,11 @@ use Illuminate\Support\Facades\Auth;
     }
 
     $(document).ready(function() {
+        // Set nilai default tanggal ke hari ini
+        const today = new Date().toISOString().split('T')[0];
+        $('#start_date').val(today);
+        $('#end_date').val(today);
+
         // Inisialisasi DataTable
         const table = $('#pemesananMobilTable').DataTable({
             order: [[1, 'asc']],
@@ -415,6 +437,70 @@ use Illuminate\Support\Facades\Auth;
                     searchable: false
                 }
             ]
+        });
+
+        // Fungsi untuk filter tanggal
+        function filterByDate() {
+            const startDate = $('#start_date').val();
+            const endDate = $('#end_date').val();
+
+            if (startDate && endDate) {
+                // Konversi format tanggal untuk perbandingan
+                const start = new Date(startDate + 'T00:00:00');
+                const end = new Date(endDate + 'T23:59:59');
+
+                // Filter data berdasarkan tanggal
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    const dateStr = data[2]; // Kolom tanggal (index 2)
+                    if (!dateStr) return false;
+
+                    try {
+                        // Parse tanggal dari format dd/mm/yy
+                        const [day, month, year] = dateStr.split('/');
+                        const rowDate = new Date(2000 + parseInt(year), parseInt(month) - 1, parseInt(day));
+
+                        // Debug log
+                        console.log('Row Date:', rowDate);
+                        console.log('Start Date:', start);
+                        console.log('End Date:', end);
+
+                        // Periksa apakah tanggal berada dalam rentang
+                        const isInRange = rowDate >= start && rowDate <= end;
+                        console.log('Is in range:', isInRange);
+
+                        return isInRange;
+                    } catch (error) {
+                        console.error('Error parsing date:', error);
+                        return false;
+                    }
+                });
+
+                table.draw();
+                // Hapus filter setelah digunakan
+                $.fn.dataTable.ext.search.pop();
+            } else {
+                // Jika tanggal tidak lengkap, tampilkan semua data
+                table.draw();
+            }
+        }
+
+        // Event listener untuk tombol filter
+        $('#filter_date').on('click', function() {
+            filterByDate();
+        });
+
+        // Event listener untuk input tanggal
+        $('#start_date, #end_date').on('change', function() {
+            if ($('#start_date').val() && $('#end_date').val()) {
+                filterByDate();
+            }
+        });
+
+        // Jalankan filter saat halaman dimuat
+        $(window).on('load', function() {
+            setTimeout(function() {
+                filterByDate();
+            }, 500);
         });
 
         // Fungsi untuk export tabel

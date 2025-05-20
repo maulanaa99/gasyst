@@ -4,7 +4,8 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Register - Gasyst</title>
 
@@ -93,7 +94,8 @@
             <!-- /Left Text -->
 
             <!-- Register -->
-            <div class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-12 px-12 py-6">
+            <div
+                class="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-12 px-12 py-6">
                 <div class="w-px-400 mx-auto pt-12 pt-lg-0">
                     <h4 class="mb-1">Adventure starts here 🚀</h4>
                     <p class="mb-5">Make your app management easy and fun!</p>
@@ -103,20 +105,22 @@
                         <!-- Name -->
                         <div class="form-floating form-floating-outline mb-5 form-control-validation">
                             <input type="text" class="form-control @error('name') is-invalid @enderror" id="name"
-                                name="name" value="{{ old('name') }}" placeholder="Enter your name" required autofocus />
+                                name="name" value="{{ old('name') }}" placeholder="Enter your name" required
+                                autofocus />
                             <label for="name">Name</label>
                             @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <!-- Username -->
                         <div class="form-floating form-floating-outline mb-5 form-control-validation">
-                            <input type="text" class="form-control @error('username') is-invalid @enderror" id="username"
-                                name="username" value="{{ old('username') }}" placeholder="Enter your username" required />
+                            <input type="text" class="form-control @error('username') is-invalid @enderror"
+                                id="username" name="username" value="{{ old('username') }}"
+                                placeholder="Enter your username" required />
                             <label for="username">Username</label>
                             @error('username')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -126,7 +130,7 @@
                                 name="email" value="{{ old('email') }}" placeholder="Enter your email" required />
                             <label for="email">Email</label>
                             @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -140,7 +144,7 @@
                                         required autocomplete="new-password" />
                                     <label for="password">Password</label>
                                     @error('password')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                                 <span class="input-group-text cursor-pointer">
@@ -160,7 +164,7 @@
                                         required autocomplete="new-password" />
                                     <label for="password_confirmation">Confirm Password</label>
                                     @error('password_confirmation')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                                 <span class="input-group-text cursor-pointer">
@@ -171,35 +175,34 @@
 
                         <!-- Profile Image -->
                         <div class="form-floating form-floating-outline mb-5 form-control-validation">
-                            <input type="file"
-                                class="form-control @error('profile_image') is-invalid @enderror"
-                                id="profile_image"
-                                name="profile_image"
-                                accept="image/*"
-                                onchange="previewImage(this)"
-                                required />
+                            <input type="file" class="form-control @error('profile_image') is-invalid @enderror"
+                                id="profile_image" name="profile_image" accept="image/*"
+                                onchange="previewImage(this)" />
                             <label for="profile_image">Profile Image</label>
                             @error('profile_image')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <div class="mt-2">
-                                <img id="imagePreview" src="#" alt="Preview" style="max-width: 200px; display: none;" class="img-thumbnail">
+                                <img id="imagePreview" src="#" alt="Preview" style="max-width: 200px; display: none;"
+                                    class="img-thumbnail">
                             </div>
                         </div>
 
                         <!-- Role -->
                         <div class="form-floating form-floating-outline mb-5 form-control-validation">
-                            <select id="role" name="role"
-                                class="form-select @error('role') is-invalid @enderror" required>
+                            <select id="role" name="role" class="form-select @error('role') is-invalid @enderror"
+                                required>
                                 <option value="" disabled selected>Select Role</option>
-                                <option value="superadmin" {{ old('role') == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
-                                <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
-                                <option value="security" {{ old('role') == 'security' ? 'selected' : '' }}>Security</option>
+                                <option value="superadmin" {{ old('role')=='superadmin' ? 'selected' : '' }}>Superadmin
+                                </option>
+                                <option value="admin" {{ old('role')=='admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="user" {{ old('role')=='user' ? 'selected' : '' }}>User</option>
+                                <option value="security" {{ old('role')=='security' ? 'selected' : '' }}>Security
+                                </option>
                             </select>
                             <label for="role">Role</label>
                             @error('role')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -264,4 +267,3 @@
 </body>
 
 </html>
-

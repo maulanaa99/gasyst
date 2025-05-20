@@ -16,14 +16,7 @@ class SuratJalanController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
-
-        if ($user->role === 'superadmin' || $user->role === 'security') {
-            $suratJalan = SuratJalan::all();
-        } else {
-            $suratJalan = SuratJalan::where('PIC', $user->name)->get();
-        }
-
+        $suratJalan = SuratJalan::all();
         $karyawan = Karyawan::all();
         $driver = Driver::all();
         $departemen = Departemen::all();
@@ -37,68 +30,103 @@ class SuratJalanController extends Controller
             // Debug untuk melihat data yang diterima
             Log::info('Data yang diterima:', $request->all());
 
-            // Validasi input
-            $validated = $request->validate([
+            $user = Auth::user();
+            $validationRules = [
                 'tanggal' => 'required|date',
                 'karyawan_id' => 'nullable|array',
                 'karyawan_id.*' => 'exists:karyawans,id',
                 'id_departemen' => 'nullable|exists:departemen,id',
                 'jam_berangkat' => 'required',
                 'jam_kembali' => 'required',
-                'id_driver' => 'required|exists:drivers,id',
                 'keterangan' => 'required',
                 'PIC' => 'required',
                 'lokasi_id' => 'required|array',
                 'lokasi_id.*' => 'exists:lokasis,id',
                 'jenis_pemesanan' => 'required|in:Karyawan,Driver Only'
-            ]);
+            ];
+
+            // Tambahkan validasi id_driver hanya untuk superadmin
+            if ($user->role === 'superadmin') {
+                $validationRules['id_driver'] = 'required|exists:drivers,id';
+            }
+
+            // Validasi input
+            $validated = $request->validate($validationRules);
+            Log::info('Data yang tervalidasi:', $validated);
 
             // Generate nomor surat jalan
             $no_surat_jalan = 'SJ-' . date('Ymd') . '-' . str_pad(SuratJalan::count() + 1, 4, '0', STR_PAD_LEFT);
+            Log::info('Nomor surat jalan yang di-generate:', ['no_surat_jalan' => $no_surat_jalan]);
 
             // Buat surat jalan baru
-            $suratJalan = SuratJalan::create([
+            $suratJalanData = [
                 'tanggal' => $validated['tanggal'],
                 'jam_berangkat' => $validated['jam_berangkat'],
                 'jam_kembali' => $validated['jam_kembali'],
-                'id_driver' => $validated['id_driver'],
                 'keterangan' => $validated['keterangan'],
                 'PIC' => $validated['PIC'],
                 'id_departemen' => $request->jenis_pemesanan === 'Driver Only' ? $validated['id_departemen'] : null,
                 'no_surat_jalan' => $no_surat_jalan,
                 'status' => 'pending',
                 'jenis_pemesanan' => $validated['jenis_pemesanan']
-            ]);
+            ];
 
-            // Simpan relasi ke tabel surat_jalan_detail
-            if ($request->jenis_pemesanan === 'Karyawan' && $request->has('karyawan_id')) {
-                foreach ($request->karyawan_id as $karyawan_id) {
+            // Tambahkan id_driver hanya jika user adalah superadmin
+            if ($user->role === 'superadmin') {
+                $suratJalanData['id_driver'] = $validated['id_driver'];
+            }
+
+            Log::info('Data yang akan disimpan ke surat_jalan:', $suratJalanData);
+
+            DB::beginTransaction();
+            try {
+                $suratJalan = SuratJalan::create($suratJalanData);
+                Log::info('Surat jalan berhasil dibuat dengan ID: ' . $suratJalan->id);
+
+                // Simpan relasi ke tabel surat_jalan_detail
+                if ($request->jenis_pemesanan === 'Karyawan' && $request->has('karyawan_id')) {
+                    Log::info('Menyimpan data karyawan:', ['karyawan_id' => $request->karyawan_id]);
+                    foreach ($request->karyawan_id as $karyawan_id) {
+                        foreach ($request->lokasi_id as $lokasi_id) {
+                            $detailData = [
+                                'surat_jalan_id' => $suratJalan->id,
+                                'karyawan_id' => $karyawan_id,
+                                'lokasi_id' => $lokasi_id,
+                                'created_at' => now(),
+                                'updated_at' => now()
+                            ];
+                            Log::info('Menyimpan detail surat jalan:', $detailData);
+                            DB::table('surat_jalan_detail')->insert($detailData);
+                        }
+                    }
+                } else {
+                    // Jika driver only, simpan hanya relasi lokasi
+                    Log::info('Menyimpan data lokasi:', ['lokasi_id' => $request->lokasi_id]);
                     foreach ($request->lokasi_id as $lokasi_id) {
-                        DB::table('surat_jalan_detail')->insert([
+                        $detailData = [
                             'surat_jalan_id' => $suratJalan->id,
-                            'karyawan_id' => $karyawan_id,
                             'lokasi_id' => $lokasi_id,
                             'created_at' => now(),
                             'updated_at' => now()
-                        ]);
+                        ];
+                        Log::info('Menyimpan detail surat jalan:', $detailData);
+                        DB::table('surat_jalan_detail')->insert($detailData);
                     }
                 }
-            } else {
-                // Jika driver only, simpan hanya relasi lokasi
-                foreach ($request->lokasi_id as $lokasi_id) {
-                    DB::table('surat_jalan_detail')->insert([
-                        'surat_jalan_id' => $suratJalan->id,
-                        'lokasi_id' => $lokasi_id,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
-                }
-            }
 
-            return redirect()->route('surat-jalan.index')->with('success', 'Surat Jalan berhasil ditambahkan');
+                DB::commit();
+                Log::info('Data berhasil disimpan ke database');
+                return redirect()->route('surat-jalan.index')->with('success', 'Surat Jalan berhasil ditambahkan');
+            } catch (\Exception $e) {
+                DB::rollback();
+                Log::error('Error saat menyimpan ke database: ' . $e->getMessage());
+                Log::error('Stack trace: ' . $e->getTraceAsString());
+                throw $e;
+            }
         } catch (\Exception $e) {
             Log::error('Error saat menyimpan surat jalan: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menambahkan surat jalan: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'Gagal menambahkan surat jalan: ' . $e->getMessage())->withInput();
         }
     }
 
