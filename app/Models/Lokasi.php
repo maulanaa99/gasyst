@@ -2,16 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Lokasi extends Model
 {
-    protected $table = 'lokasis';
-    protected $fillable = ['kode_lokasi', 'nama_lokasi', 'alamat', 'kota', 'provinsi', 'kode_pos', 'no_telp'];
+    use HasFactory;
+
+    protected $table = 'lokasi';
+
+    protected $fillable = [
+        'kode_lokasi',
+        'nama_lokasi',
+        'alamat'
+    ];
 
     public function suratJalan()
     {
-        return $this->belongsToMany(SuratJalan::class, 'surat_jalan_detail', 'lokasi_id', 'surat_jalan_id')
-            ->withTimestamps();
+        return $this->hasMany(SuratJalan::class, 'id_lokasi');
     }
 }

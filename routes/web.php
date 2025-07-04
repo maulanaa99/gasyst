@@ -2,15 +2,13 @@
 
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\MobilController;
-use App\Http\Controllers\PemesananDriverController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuratJalanController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\LokasiController;
-use App\Models\Driver;
-use App\Models\Mobil;
-use App\Models\SuratJalan;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DokumenController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,19 +19,10 @@ Route::get('/api/pemesanan-mobil/{period}', [ChartController::class, 'getPemesan
 Route::get('/api/driver-trips/{period}', [ChartController::class, 'getDriverTripsData']);
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        $totalPemesananMobil = SuratJalan::count();
-        $totalDriver = Driver::count();
-        $totalMobil = Mobil::count();
-        $DriverAvailable = Driver::where('status', 'Available')->count();
-        $notAvailableDriver = Driver::where('status', 'Not Available')->count();
-        $driver = Driver::all();
-        $mobil = Mobil::all();
-        return view('dashboard', compact('totalPemesananMobil', 'totalDriver', 'totalMobil', 'DriverAvailable', 'notAvailableDriver', 'driver', 'mobil'));
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Routes for admin
-    Route::group(['middleware' => ['role:superadmin,admin,user,security']], function () {
+    Route::group(['middleware' => ['role:superadmin,admin,hrga,security,manager']], function () {
         //Profile
         Route::get('/profile/index', [ProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -45,6 +34,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/mobil', [MobilController::class, 'store'])->name('mobil.store');
         Route::put('/mobil/{id}', [MobilController::class, 'update'])->name('mobil.update');
         Route::delete('/mobil/{id}', [MobilController::class, 'destroy'])->name('mobil.destroy');
+        Route::delete('/mobil/bulk-delete', [MobilController::class, 'bulkDelete'])->name('mobil.bulk-delete');
 
         //Driver
         Route::get('/driver', [DriverController::class, 'index'])->name('driver.index');
@@ -65,7 +55,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/surat-jalan/{id}/check-driver', [SuratJalanController::class, 'checkDriver'])->name('surat-jalan.check-driver');
         Route::post('/surat-jalan/delete-selected', [SuratJalanController::class, 'deleteSelected'])->name('surat-jalan.delete-selected');
         Route::get('/surat-jalan/{id}/print', [SuratJalanController::class, 'print'])->name('surat-jalan.print');
-        Route::post('/surat-jalan/{id}/approve', [SuratJalanController::class, 'approve'])->middleware(['auth', 'role:security'])->name('surat-jalan.approve');
+        Route::post('/surat-jalan/{id}/approve', [SuratJalanController::class, 'approve'])->name('surat-jalan.approve');
+        Route::post('/surat-jalan/{id}/approve-manager', [SuratJalanController::class, 'approveManager'])->name('surat-jalan.approve-manager');
+        Route::post('/surat-jalan/{id}/approve-hrga', [SuratJalanController::class, 'approveHrga'])->name('surat-jalan.approve-hrga');
+        Route::post('/surat-jalan/{id}/check-security', [SuratJalanController::class, 'checkSecurity'])->name('surat-jalan.check-security');
+
+        Route::get('/surat-jalan/get-next-number', [SuratJalanController::class, 'getNextNumber'])->name('surat-jalan.get-next-number');
 
         //Lokasi
         Route::get('/lokasi', [LokasiController::class, 'index'])->name('lokasi.index');
@@ -73,6 +68,11 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/lokasi/{id}', [LokasiController::class, 'update'])->name('lokasi.update');
         Route::delete('/lokasi/{id}', [LokasiController::class, 'destroy'])->name('lokasi.destroy');
 
+        //Dokumen
+        Route::get('/dokumen', [DokumenController::class, 'index'])->name('dokumen.index');
+        Route::post('/dokumen', [DokumenController::class, 'store'])->name('dokumen.store');
+        Route::put('/dokumen/{id}', [DokumenController::class, 'update'])->name('dokumen.update');
+        Route::delete('/dokumen/{id}', [DokumenController::class, 'destroy'])->name('dokumen.destroy');
     });
 
     // Routes for superadmin
@@ -86,29 +86,5 @@ Route::middleware(['auth'])->group(function () {
         // Route::get('/surat-jalan', [SuratJalanController::class, 'index'])->name('surat-jalan.index');
     });
 });
-
-Route::get('/signature/{filename}', function ($filename) {
-    $filename = str_replace('signatures/', '', $filename);
-    $path = storage_path('app/private/public/signatures/' . $filename);
-
-    \Illuminate\Support\Facades\Log::info('Signature Request', [
-        'original_filename' => $filename,
-        'path' => $path,
-        'exists' => file_exists($path)
-    ]);
-
-    if (!file_exists($path)) {
-        abort(404);
-    }
-    return response()->file($path);
-})->name('signature.show')->where('filename', '.*');
-
-Route::get('/security-cap', function () {
-    $path = storage_path('app/private/public/signatures/Cap SR.png');
-    if (!file_exists($path)) {
-        abort(404);
-    }
-    return response()->file($path);
-})->name('security.cap');
 
 require __DIR__ . '/auth.php';

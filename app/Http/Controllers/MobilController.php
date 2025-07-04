@@ -19,7 +19,7 @@ class MobilController extends Controller
         $request->validate([
             'nama_mobil' => 'required',
             'plat_no' => 'required',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'car_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'status' => 'required',
         ]);
 
@@ -87,5 +87,43 @@ class MobilController extends Controller
         $mobil->save();
 
         return redirect()->route('mobil.index')->with('success', 'Data mobil berhasil diupdate');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:mobil,id'
+            ]);
+
+            $ids = $request->ids;
+            $deletedCount = 0;
+
+            foreach ($ids as $id) {
+                $mobil = Mobil::find($id);
+
+                if ($mobil) {
+                    // Hapus file gambar jika ada
+                    if ($mobil->car_image) {
+                        $oldImagePath = public_path('storage/' . $mobil->car_image);
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
+
+                    $mobil->delete();
+                    $deletedCount++;
+                }
+            }
+
+            $message = $deletedCount > 1
+                ? "Berhasil menghapus {$deletedCount} data mobil"
+                : "Berhasil menghapus data mobil";
+
+            return redirect()->route('mobil.index')->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->route('mobil.index')->with('error', 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage());
+        }
     }
 }

@@ -29,6 +29,13 @@
                     <div data-i18n="Pesan Mobil">Pesan Mobil</div>
                 </a>
             </li>
+
+            <li class="menu-item {{ Request::is('dokumen*') ? 'active open' : '' }}">
+                <a href="{{ route('dokumen.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ri ri-file-list-3-line"></i>
+                    <div data-i18n="Dokumen">Dokumen</div>
+                </a>
+            </li>
         </ul>
     </div>
 </aside>

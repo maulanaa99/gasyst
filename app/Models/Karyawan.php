@@ -2,20 +2,35 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Karyawan extends Model
 {
-    protected $table = 'karyawans';
-    protected $fillable = ['nik', 'nama_karyawan', 'id_departemen', 'jabatan'];
+    use HasFactory;
 
-    public function suratJalan()
-    {
-        return $this->belongsToMany(SuratJalan::class, 'surat_jalan_detail_karyawan');
-    }
+    protected $table = 'karyawan';
+
+    protected $fillable = [
+        'NIK',
+        'nama_karyawan',
+        'id_departemen',
+        'jabatan',
+        'karyawan_image'
+    ];
 
     public function departemen()
     {
         return $this->belongsTo(Departemen::class, 'id_departemen');
+    }
+
+    public function driver()
+    {
+        return $this->hasOne(Driver::class, 'id_karyawan');
+    }
+
+    public function suratJalan()
+    {
+        return $this->hasMany(SuratJalan::class, 'id_karyawan');
     }
 }

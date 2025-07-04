@@ -19,10 +19,28 @@
                 <div class="dt-buttons btn-group flex-wrap">
                     <div class="btn-group"><button
                             class="btn buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none"
-                            tabindex="0" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog"
+                            tabindex="0" aria-controls="DataTables_Table_0" type="button" data-bs-toggle="dropdown"
                             aria-expanded="false"><span><span class="d-flex align-items-center gap-2"><i
                                         class="icon-base ri ri-external-link-line icon-18px"></i> <span
-                                        class="d-none d-sm-inline-block">Export</span></span></span></button></div>
+                                        class="d-none d-sm-inline-block">Export</span></span></span></button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('print')">
+                                        <i class="icon-base ri ri-printer-line me-2"></i>Print
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('excel')">
+                                        <i class="icon-base ri ri-file-excel-line me-2"></i>Excel
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('pdf')">
+                                        <i class="icon-base ri ri-file-pdf-line me-2"></i>PDF
+                                    </a>
+                                </li>
+                            </ul>
+                    </div>
                     <button class="btn create-new btn-primary" tabindex="0" aria-controls="DataTables_Table_0"
                         type="button" data-bs-toggle="modal" data-bs-target="#addDriverModal"><span><span
                                 class="d-flex align-items-center"><i
@@ -50,7 +68,7 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>
-                            @if($item->image==null)
+                            @if($item->driver_image==null)
                             <div class="d-flex justify-content-start align-items-center user-name">
                                 <div class="avatar-wrapper">
                                     <div class="avatar me-2"><span
@@ -66,7 +84,7 @@
                             <div class="d-flex justify-content-start align-items-center user-name">
                                 <div class="avatar-wrapper">
                                     <div class="avatar me-2">
-                                        <img src="{{ asset('storage/' . $item->image) }}" alt="Driver Image"
+                                        <img src="{{ asset('storage/' . $item->driver_image) }}" alt="Driver Image"
                                             class="rounded-circle"
                                             style="width: 40px; height: 40px; object-fit: cover;">
                                     </div>
@@ -78,9 +96,9 @@
                             </div>
                             @endif
                         </td>
-                        <td>{{ $item->mobils ? $item->mobils->plat_no : '-' }}</td>
+                        <td>{{ $item->mobil ? $item->mobil->plat_no : '-' }}</td>
                         <td> {{ $item->karyawan->nama_karyawan }} </td>
-                        @if ($item->status == 'Available')
+                        @if ($item->status == 'Tersedia')
                         <td><span class="badge rounded-pill  bg-label-success">{{ $item->status }}</span>
                         </td>
                         @else
@@ -90,8 +108,7 @@
                             <button type="button" class="btn btn-icon btn-warning btn-edit waves-effect waves-light"
                                 data-id="{{ $item->id }}" data-nama="{{ $item->nama_driver }}"
                                 data-outsourching="{{ $item->outsourching }}" data-mobil="{{ $item->id_mobil }}"
-                                data-user="{{ $item->user }}" data-rute="{{ $item->rute }}"
-                                data-status="{{ $item->status }}">
+                                data-karyawan="{{ $item->id_karyawan }}" data-status="{{ $item->status }}">
                                 <i class="icon-base ri ri-edit-line icon-18px" style="color: white"></i>
                             </button>
                             <form action="{{ route('driver.destroy', $item->id) }}" method="POST" class="d-inline">
@@ -124,47 +141,52 @@
             <form action="{{ route('driver.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
-                    <div class="row mb-3">
+                    <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="nama_driver" class="form-label">Nama Driver</label>
-                                <input type="text" class="form-control" id="nama_driver" name="nama_driver" required>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <input type="text" class="form-control" id="nama_driver" name="nama_driver" placeholder="Masukkan nama driver" required>
+                                <label for="nama_driver">Nama Driver</label>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="outsourching" class="form-label">Outsourching</label>
-                                <input type="text" class="form-control" id="outsourching" name="outsourching" required>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <input type="text" class="form-control" id="outsourching" name="outsourching" placeholder="Masukkan outsourching" required>
+                                <label for="outsourching">Outsourching</label>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="id_mobil" class="form-label">Mobil</label>
+                            <div class="form-floating form-floating-outline mb-6">
                                 <select class="form-select select2" id="id_mobil" name="id_mobil" required>
                                     <option value="" disabled selected>Pilih Mobil</option>
                                     @foreach($mobils as $mobil)
-                                    <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{ $mobil->plat_no }}
-                                    </option>
+                                    <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{ $mobil->plat_no }}</option>
                                     @endforeach
                                 </select>
+                                <label for="id_mobil">Mobil</label>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="user" class="form-label">User</label>
-                                <input type="text" class="form-control" id="user" name="user" required>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <select class="form-select select2" id="id_karyawan" name="id_karyawan" required>
+                                    <option value="" disabled selected>Pilih User</option>
+                                    @foreach($karyawans as $karyawan)
+                                    <option value="{{ $karyawan->id }}">{{ $karyawan->nama_karyawan }}</option>
+                                    @endforeach
+                                </select>
+                                <label for="id_karyawan">User</label>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="rute" class="form-label">Rute</label>
-                                <input type="text" class="form-control" id="rute" name="rute" required>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <input type="file" class="form-control" id="driver_image" name="driver_image" required>
+                                <label for="driver_image">Image</label>
+                                <div class="mt-2">
+                                    <img id="preview" src="#" alt="Preview" style="max-height: 100px; display: none;">
+                                </div>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="image" class="form-label">Image</label>
-                                <input type="file" class="form-control" id="image" name="image" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="status" class="form-label">Status</label>
+                            <div class="form-floating form-floating-outline mb-6">
                                 <select class="form-select select2" id="status" name="status" required>
                                     <option value="" disabled selected>Pilih Status</option>
-                                    <option value="Aktif">Aktif</option>
-                                    <option value="Tidak Aktif">Tidak Aktif</option>
+                                    <option value="Tersedia">Tersedia</option>
+                                    <option value="Dipesan">Dipesan</option>
+                                    <option value="Dalam Perjalanan">Dalam Perjalanan</option>
+                                    <option value="Servis">Servis</option>
                                 </select>
+                                <label for="status">Status</label>
                             </div>
                         </div>
                     </div>
@@ -192,59 +214,54 @@
                 @method('PUT')
                 <input type="hidden" name="driver_id" id="edit_driver_id">
                 <div class="modal-body">
-                    <div class="row mb-3">
+                    <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="edit_nama_driver" class="form-label">Nama Driver</label>
-                                <input type="text" class="form-control" id="edit_nama_driver" name="nama_driver"
-                                    required>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <input type="text" class="form-control" id="edit_nama_driver" name="nama_driver" placeholder="Masukkan nama driver" required>
+                                <label for="edit_nama_driver">Nama Driver</label>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_outsourching" class="form-label">Outsourching</label>
-                                <input type="text" class="form-control" id="edit_outsourching" name="outsourching"
-                                    required>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <input type="text" class="form-control" id="edit_outsourching" name="outsourching" placeholder="Masukkan outsourching" required>
+                                <label for="edit_outsourching">Outsourching</label>
                             </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_id_mobil" class="form-label">Mobil</label>
+                            <div class="form-floating form-floating-outline mb-6">
                                 <select class="form-select select2" id="edit_id_mobil" name="id_mobil" required>
                                     <option value="" disabled selected>Pilih Mobil</option>
                                     @foreach($mobils as $mobil)
-                                    <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{
-                                        $mobil->plat_no }}
-                                    </option>
+                                    <option value="{{ $mobil->id }}">{{ $mobil->nama_mobil }} - {{ $mobil->plat_no }}</option>
                                     @endforeach
                                 </select>
+                                <label for="edit_id_mobil">Mobil</label>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="edit_user" class="form-label">User</label>
-                                <input type="text" class="form-control" id="edit_user" name="user" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_rute" class="form-label">Rute</label>
-                                <input type="text" class="form-control" id="edit_rute" name="rute" required>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_image" class="form-label">Image</label>
-                                <div class="mb-2">
-                                    <img id="current_image" src="" alt="Current Driver Image"
-                                        style="max-height: 100px;">
-                                </div>
-                                <input type="file" class="form-control" id="edit_image" name="image"
-                                    onchange="previewEditImage(this)">
-                                <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
-                                <div class="mt-2">
-                                    <img id="preview_edit" src="#" alt="Preview"
-                                        style="max-height: 100px; display: none;">
-                                </div>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_status" class="form-label">Status</label>
-                                <select class="form-select select2" id="edit_status" name="status">
-                                    <option value="Available">Available</option>
-                                    <option value="Not Available">Not Available</option>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <select class="form-select select2" id="edit_id_karyawan" name="id_karyawan" required>
+                                    <option value="" disabled selected>Pilih User</option>
+                                    @foreach($karyawans as $karyawan)
+                                    <option value="{{ $karyawan->id }}">{{ $karyawan->nama_karyawan }}</option>
+                                    @endforeach
                                 </select>
+                                <label for="edit_id_karyawan">User</label>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <input type="file" class="form-control" id="edit_driver_image" name="driver_image">
+                                <label for="edit_driver_image">Image</label>
+                                <div class="mt-2">
+                                    <img id="current_image" src="" alt="Current Driver Image" style="max-height: 100px; display: none;">
+                                    <img id="preview_edit" src="#" alt="Preview" style="max-height: 100px; display: none;">
+                                </div>
+                                <small class="text-muted">Biarkan kosong jika tidak ingin mengubah gambar</small>
+                            </div>
+                            <div class="form-floating form-floating-outline mb-6">
+                                <select class="form-select select2" id="edit_status" name="status" required>
+                                    <option value="" disabled>Pilih Status</option>
+                                    <option value="Tersedia">Tersedia</option>
+                                    <option value="Dipesan">Dipesan</option>
+                                    <option value="Dalam Perjalanan">Dalam Perjalanan</option>
+                                    <option value="Servis">Servis</option>
+                                </select>
+                                <label for="edit_status">Status</label>
                             </div>
                         </div>
                     </div>
@@ -268,8 +285,44 @@
 <script>
     $(document).ready(function() {
         $('#driverTable').DataTable({
-            responsive: true
+            responsive: true,
+            buttons: [
+                {
+                    extend: 'print',
+                    text: 'Print',
+                    className: 'buttons-print d-none',
+                    exportOptions: { columns: [0, 1, 2, 3, 4] }
+                },
+                {
+                    extend: 'excel',
+                    text: 'Excel',
+                    className: 'buttons-excel d-none',
+                    exportOptions: { columns: [0, 1, 2, 3, 4] }
+                },
+                {
+                    extend: 'pdf',
+                    text: 'PDF',
+                    className: 'buttons-pdf d-none',
+                    exportOptions: { columns: [0, 1, 2, 3, 4] }
+                }
+            ]
         });
+
+        // Fungsi untuk export tabel
+        window.exportTable = function(type) {
+            const table = $('#driverTable').DataTable();
+            switch(type) {
+                case 'print':
+                    table.button('.buttons-print').trigger();
+                    break;
+                case 'excel':
+                    table.button('.buttons-excel').trigger();
+                    break;
+                case 'pdf':
+                    table.button('.buttons-pdf').trigger();
+                    break;
+            }
+        };
 
         // Handle click pada tombol edit
         $(document).on('click', '.btn-edit', function() {
@@ -278,10 +331,9 @@
             var nama = $(this).data('nama');
             var outsourching = $(this).data('outsourching');
             var mobil = $(this).data('mobil');
-            var user = $(this).data('user');
-            var rute = $(this).data('rute');
+            var karyawan = $(this).data('karyawan');
             var status = $(this).data('status');
-            var image = $(this).closest('tr').find('img').attr('src');
+            var driver_image = $(this).closest('tr').find('img').attr('src');
 
             // Set nilai ke form edit
             $('#edit_driver_id').val(id);
@@ -290,14 +342,12 @@
 
             // Set value untuk select2 dan refresh untuk update tampilan
             $('#edit_id_mobil').val(mobil).trigger('change');
-
-            $('#edit_user').val(user);
-            $('#edit_rute').val(rute);
-            $('#edit_status').val(status);
+            $('#edit_id_karyawan').val(karyawan).trigger('change');
+            $('#edit_status').val(status).trigger('change');
 
             // Set current image
-            if (image) {
-                $('#current_image').attr('src', image).show();
+            if (driver_image) {
+                $('#current_image').attr('src', driver_image).show();
             } else {
                 $('#current_image').hide();
             }
@@ -313,7 +363,7 @@
         });
 
         // Handle image preview untuk form tambah
-        $('#image').change(function() {
+        $('#driver_image').change(function() {
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();

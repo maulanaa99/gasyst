@@ -23,78 +23,84 @@ use Illuminate\Support\Facades\Auth;
                     timer: 3000
                 });
             </script>
+
+            @endif
+            @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
             @endif
             <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto">
                 <h5 class="card-title mb-0 text-md-start text-center">List Pemesanan Mobil</h5>
             </div>
 
-            <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto mt-0">
-
-                @if(Auth::user()->role !== 'security')
-                <div class="dt-buttons flex-wrap">
-                    <div class="btn-group">
-                        <button
-                            class="btn btn-sm buttons-collection btn-label-primary dropdown-toggle me-4 waves-effect border-none"
-                            tabindex="0" aria-controls="DataTables_Table_0" type="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            <span>
-                                <span class="d-flex align-items-center gap-2">
-                                    <i class="icon-base ri ri-external-link-line icon-18px"></i>
-                                    <span class="d-none d-sm-inline-block">Export</span>
-                                </span>
-                            </span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('print')">
-                                    <i class="icon-base ri ri-printer-line me-2"></i>Print
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('excel')">
-                                    <i class="icon-base ri ri-file-excel-line me-2"></i>Excel
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('pdf')">
-                                    <i class="icon-base ri ri-file-pdf-line me-2"></i>PDF
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <button class="btn btn-sm btn-danger me-2" id="deleteSelectedBtn" style="display: none;">
-                        <span class="d-flex align-items-center">
-                            <i class="icon-base ri ri-delete-bin-line icon-18px me-sm-1"></i>
-                            <span class="d-none d-sm-inline-block">Hapus Terpilih</span>
-                        </span>
-                        <button type="button" class="btn btn-primary waves-effect waves-light"
-                            onclick="window.location.href='{{ route('surat-jalan.create') }}'">
-                            <span class="icon-base ri ri-add-line icon-18px me-2"></span>Tambah Pemesanan Mobil
-                        </button>
-                </div>
-                @endif
-            </div>
         </div>
     </div>
     <div class="card-body">
         <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="row">
-                    <div class="col-md-5">
-                        <div class="form-group">
-                            <label for="start_date" class="form-label">Tanggal Mulai</label>
-                            <input type="date" class="form-control" id="start_date" value="{{ date('Y-m-d') }}">
-                        </div>
+            <div class="col-md-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="col-md-6">
+                        <form method="GET" action="{{ route('surat-jalan.index') }}">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="form-floating form-floating-outline">
+                                        <input class="form-control" type="date" id="start_date" name="start_date"
+                                            value="{{ request('start_date', date('Y-m-d')) }}">
+                                        <label for="start_date">Tanggal Awal</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="form-floating form-floating-outline">
+                                        <input class="form-control" type="date" id="end_date" name="end_date"
+                                            value="{{ request('end_date', date('Y-m-d')) }}">
+                                        <label for="end_date">Tanggal Akhir</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary form-control">Filter</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                    <div class="col-md-5">
-                        <div class="form-group">
-                            <label for="end_date" class="form-label">Tanggal Akhir</label>
-                            <input type="date" class="form-control" id="end_date" value="{{ date('Y-m-d') }}">
+                    @if(Auth::user()->role !== 'security')
+                    <div class="d-flex gap-2">
+                        <div class="btn-group">
+                            <button
+                                class="btn btn-sm buttons-collection btn-label-primary dropdown-toggle waves-effect border-none form-control"
+                                tabindex="0" aria-controls="DataTables_Table_0" type="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                <span>
+                                    <span class="d-flex align-items-center gap-2">
+                                        <i class="icon-base ri ri-external-link-line icon-18px"></i>
+                                        <span class="d-none d-sm-inline-block">Export</span>
+                                    </span>
+                                </span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('print')">
+                                        <i class="icon-base ri ri-printer-line me-2"></i>Print
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('excel')">
+                                        <i class="icon-base ri ri-file-excel-line me-2"></i>Excel
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="exportTable('pdf')">
+                                        <i class="icon-base ri ri-file-pdf-line me-2"></i>PDF
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
+                        <button type="button" class="btn btn-primary waves-effect waves-light form-control"
+                            onclick="window.location.href='{{ route('surat-jalan.create') }}'">
+                            <span class="icon-base ri ri-add-line icon-18px me-2"></span>Tambah
+                        </button>
                     </div>
-                    {{-- <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-primary" id="filter_date">Filter</button>
-                    </div> --}}
+                    @endif
                 </div>
             </div>
         </div>
@@ -102,7 +108,8 @@ use Illuminate\Support\Facades\Auth;
             <table class="table table-bordered table-hover" id="pemesananMobilTable">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" class="form-check-input" id="selectAll"></th>
+                        <th>@if(Auth::user()->role !== 'security')<input type="checkbox" class="form-check-input"
+                                id="selectAll">@endif</th>
                         <th>No</th>
                         <th>Tanggal</th>
                         <th>Nama Karyawan</th>
@@ -110,41 +117,42 @@ use Illuminate\Support\Facades\Auth;
                         <th>Jam Berangkat</th>
                         <th>Jam Kembali</th>
                         <th>Nama Driver</th>
-                        <th>PIC</th>
                         <th>Keterangan</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($suratJalan as $item)
                     <tr data-id="{{ $item->id }}">
-                        <td><input type="checkbox" class="form-check-input item-checkbox" data-id="{{ $item->id }}">
-                        </td>
+                        <td>@if(Auth::user()->role !== 'security')<input type="checkbox"
+                                class="form-check-input item-checkbox" data-id="{{ $item->id }}">@endif</td>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ date('d/m/y', strtotime($item->tanggal)) }}</td>
                         <td>
                             @if($item->jenis_pemesanan === 'Driver Only')
-                                <span class="badge rounded-pill  bg-label-info">Driver Only</span>
+                            <span class="badge rounded-pill  bg-label-info">Driver Only</span>
                             @elseif($item->karyawans->count() > 0)
-                                {{ $item->karyawans->pluck('nama_karyawan')->join(', ') }}
+                            {{ $item->karyawans->pluck('nama_karyawan')->join(', ') }}
                             @else
-                                -
+                            -
                             @endif
                         </td>
                         <td>
                             @if($item->lokasis->count() > 0)
-                                {{ $item->lokasis->unique('id')->pluck('kode_lokasi')->join(', ') }}
+                            {{ $item->lokasis->unique('id')->pluck('kode_lokasi')->join(', ') }}
                             @else
-                                -
+                            -
                             @endif
                         </td>
                         <td>
-                            @if($item->jam_berangkat_aktual)
-                            <span class="text-success">Aktual : {{ $item->jam_berangkat_aktual }}</span>
+                            @if($item->jam_berangkat)
+                            <span class="text-success">{{ $item->jam_berangkat }}</span>
                             @else
-                            <span class="text-danger">Est : {{ $item->jam_berangkat }}</span>
-                            @if((Auth::user()->role === 'superadmin' || Auth::user()->role === 'security') &&
-                            !$item->status_jam_berangkat_aktual)
+                            <span class="text-danger">Belum diisi</span>
+                            @endif
+                            @if((Auth::user()->role === 'hrga' || Auth::user()->role === 'security') && $item->status
+                            === 'Dipesan' && !is_null($item->id_driver))
                             <div class="d-flex align-items-center mt-1">
                                 <button type="button" class="btn btn-sm btn-info ms-2 btn-set-jam-berangkat"
                                     data-id="{{ $item->id }}">
@@ -152,217 +160,258 @@ use Illuminate\Support\Facades\Auth;
                                 </button>
                             </div>
                             @endif
-                            @endif
                         </td>
                         <td>
-                            @if($item->jam_kembali_aktual)
-                            <span class="text-success">Aktual : {{ $item->jam_kembali_aktual }}</span>
+                            @if($item->jam_kembali)
+                            <span class="text-success">{{ $item->jam_kembali }}</span>
                             @else
-                            <span class="text-danger">Est : {{ $item->jam_kembali }}</span>
-                            @if((Auth::user()->role === 'superadmin' || Auth::user()->role === 'security') &&
-                            !$item->status_jam_kembali_aktual)
+                            <span class="text-danger">Belum diisi</span>
+                            @endif
+                            @if((Auth::user()->role === 'hrga' || Auth::user()->role === 'security') && $item->status
+                            === 'Dalam Perjalanan')
                             <div class="d-flex align-items-center mt-1">
-                                @if($item->jam_berangkat_aktual)
                                 <button type="button" class="btn btn-sm btn-info ms-2 btn-set-jam-kembali"
                                     data-id="{{ $item->id }}">
                                     <i class="icon-base ri ri-time-line"></i>
                                 </button>
-                                @endif
                             </div>
                             @endif
+                        </td>
+                        <td>
+                            @if($item->id_driver==null)
+                            <div class="d-flex justify-content-start align-items-center user-name">
+                                {{-- <div class="avatar-wrapper">
+                                    <div class="avatar me-2"><span
+                                            class="avatar-initial rounded-circle bg-label-success">{{
+                                            $item->driver->nama_driver[0] ?? '-' }}</span></div>
+                                </div> --}}
+                                <div class="d-flex flex-column"><span
+                                        class="emp_name text-truncate text-heading fw-medium">{{ $item->driver->nama_driver ?? '-'}}</span><small class="emp_post text-truncate">{{ $item->driver->outsourching ?? '-' }}</small>
+                                </div>
+                            </div>
+                            @else
+                            <div class="d-flex justify-content-start align-items-center user-name">
+                                <div class="avatar-wrapper">
+                                    <div class="avatar me-2">
+                                        <img src="{{ asset('storage/' . $item->driver->driver_image) }}" alt="Driver Image"
+                                            class="rounded-circle"
+                                            style="width: 40px; height: 40px; object-fit: cover;">
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column"><span
+                                        class="emp_name text-truncate text-heading fw-medium">{{ $item->driver->nama_driver ?? '-'
+                                        }}</span><small class="emp_post text-truncate">{{ $item->driver->mobil->nama_mobil ?? '-' }}</small>
+                                </div>
+                            </div>
                             @endif
                         </td>
-                        <td>{{ $item->driver->nama_driver ?? '-' }}</td>
-                        {{-- <td>{{ $item->status }}</td> --}}
-                        <td>{{ $item->PIC }}</td>
+
                         <td>{{ $item->keterangan }}</td>
-                        <td class="d-flex gap-2">
-                            @if(Auth::user()->role === 'security' && !$item->status_approve)
-                            <button type="button"
-                                class="btn btn-icon btn-success btn-sm waves-effect waves-light btn-approve"
-                                data-id="{{ $item->id }}">
-                                <i class="icon-base ri ri-check-line icon-18px" style="color: white"></i>
-                            </button>
+                        <td>
+                            @if($item->status === 'Dipesan')
+                            <span class="badge rounded-pill bg-label-secondary">Dipesan</span>
+                            @elseif($item->status === 'Dalam Perjalanan')
+                            <span class="badge rounded-pill bg-label-primary">Dalam Perjalanan</span>
+                            @elseif($item->status === 'Selesai')
+                            <span class="badge rounded-pill bg-label-success">Selesai</span>
+                            @elseif($item->status === 'Dibatalkan')
+                            <span class="badge rounded-pill bg-label-danger">Dibatalkan</span>
                             @endif
-                            <a href="{{ route('surat-jalan.print', $item->id) }}" target="_blank"
-                                class="btn btn-icon btn-info btn-sm waves-effect waves-light">
-                                <i class="icon-base ri ri-printer-line icon-18px" style="color: white"></i>
-                            </a>
-                            <button type="button"
-                                class="btn btn-icon btn-warning btn-sm btn-edit waves-effect waves-light"
-                                data-bs-toggle="modal" data-bs-target="#editPemesananMobilModal{{ $item->id }}">
-                                <i class="icon-base ri ri-edit-line icon-18px" style="color: white"></i>
-                            </button>
-                            <button type="button"
-                                class="btn btn-icon btn-danger btn-sm btn-fab demo waves-effect waves-light delete-btn"
-                                data-id="{{ $item->id }}">
-                                <i class="icon-base ri ri-delete-bin-line icon-18px" style="color: white"></i>
-                            </button>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                @if(Auth::user()->role === 'manager' &&
+                                ($item->jenis_pemesanan === 'Driver Only' ?
+                                ($item->departemen &&
+                                $item->departemen->manager_id === Auth::id() &&
+                                !$item->approve_by && !$item->approve_at) :
+                                $item->suratJalanDetail->some(function($detail) {
+                                return $detail->karyawan &&
+                                $detail->karyawan->departemen &&
+                                $detail->karyawan->departemen->manager_id === Auth::id();
+                                }) && !$item->approve_by && !$item->approve_at))
+                                <button type="button"
+                                    class="btn btn-icon btn-success waves-effect waves-light btn-approve-manager"
+                                    data-id="{{ $item->id }}">
+                                    <i class="icon-base ri ri-check-double-line icon-18px" style="color: white"></i>
+                                </button>
+                                @endif
+                                @if(Auth::user()->role === 'hrga' && !$item->acknowledged_by && !$item->acknowledged_at)
+                                <button type="button"
+                                    class="btn btn-icon btn-success waves-effect waves-light btn-approve-hrga"
+                                    data-id="{{ $item->id }}">
+                                    <i class="icon-base ri ri-check-double-line icon-18px" style="color: white"></i>
+                                </button>
+                                @endif
+                                @if(Auth::user()->role === 'security' && !$item->checked_by && !$item->checked_at &&
+                                $item->status === 'Selesai')
+                                <button type="button"
+                                    class="btn btn-icon btn-success waves-effect waves-light btn-check-security"
+                                    data-id="{{ $item->id }}">
+                                    <i class="icon-base ri ri-check-line icon-18px" style="color: white"></i>
+                                </button>
+                                @endif
+
+                                <a href="{{ route('surat-jalan.print', $item->id) }}" target="_blank"
+                                    class="btn btn-icon btn-info waves-effect waves-light">
+                                    <i class="icon-base ri ri-printer-line icon-18px" style="color: white"></i>
+                                </a>
+                                @if(Auth::user()->role !== 'security')
+                                @php
+                                    $hideEdit = (in_array(Auth::user()->role, ['admin', 'security','manager']) && in_array($item->status, ['Dalam Perjalanan', 'Selesai']));
+                                @endphp
+                                @if(!$hideEdit)
+                                <button type="button" class="btn btn-icon btn-warning waves-effect waves-light btn-edit"
+                                    data-bs-toggle="modal" data-bs-target="#editPemesananMobilModal{{ $item->id }}">
+                                    <i class="icon-base ri ri-edit-line icon-18px" style="color: white"></i>
+                                </button>
+                                <button type="button"
+                                    class="btn btn-icon btn-danger waves-effect waves-light delete-btn"
+                                    data-id="{{ $item->id }}">
+                                    <i class="icon-base ri ri-delete-bin-line icon-18px" style="color: white"></i>
+                                </button>
+                                @endif
+                                @endif
+                            </div>
                         </td>
                     </tr>
 
-
-                    <!-- Modal Edit untuk item ini -->
+                    <!-- Modal Edit -->
                     <div class="modal fade" id="editPemesananMobilModal{{ $item->id }}" tabindex="-1"
                         aria-labelledby="editPemesananMobilModalLabel{{ $item->id }}" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="editPemesananMobilModalLabel{{ $item->id }}">Edit Data
+                                    <h5 class="modal-title" id="editPemesananMobilModalLabel{{ $item->id }}">Edit
                                         Pemesanan Mobil</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
-                                <form action="{{ route('surat-jalan.update', $item->id) }}" method="POST"
-                                    enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PUT')
-                                    <div class="modal-body">
+                                <div class="modal-body">
+                                    <form action="{{ route('surat-jalan.update', $item->id) }}" method="POST">
+                                        @csrf
+                                        @method('PUT')
                                         <div class="row">
+                                            <!-- Jenis Pemesanan -->
                                             <div class="col-md-12 mb-3">
-                                                <div class="form-group">
-                                                    <label class="form-label">Jenis Pemesanan</label>
-                                                    <div class="d-flex gap-3">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio"
-                                                                name="jenis_pemesanan" id="jenisKaryawan{{ $item->id }}"
-                                                                value="Karyawan" {{ $item->jenis_pemesanan === 'Karyawan' ? 'checked' : '' }}>
-                                                            <label class="form-check-label"
-                                                                for="jenisKaryawan{{ $item->id }}">
-                                                                Karyawan
-                                                            </label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio"
-                                                                name="jenis_pemesanan"
-                                                                id="jenisDriverOnly{{ $item->id }}" value="Driver Only"
-                                                                {{ $item->jenis_pemesanan === 'Driver Only' ? 'checked' : '' }}>
-                                                            <label class="form-check-label"
-                                                                for="jenisDriverOnly{{ $item->id }}">
-                                                                Driver Only
-                                                            </label>
-                                                        </div>
-                                                    </div>
+                                                <label class="form-label">Jenis Pemesanan</label><br>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input jenis-pemesanan-radio" type="radio"
+                                                        name="jenis_pemesanan" id="jenisKaryawan{{ $item->id }}"
+                                                        value="Karyawan" @if($item->jenis_pemesanan == 'Karyawan')
+                                                    checked @endif>
+                                                    <label class="form-check-label"
+                                                        for="jenisKaryawan{{ $item->id }}">Karyawan</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input jenis-pemesanan-radio" type="radio"
+                                                        name="jenis_pemesanan" id="jenisDriverOnly{{ $item->id }}"
+                                                        value="Driver Only" @if($item->jenis_pemesanan == 'Driver Only')
+                                                    checked @endif>
+                                                    <label class="form-check-label"
+                                                        for="jenisDriverOnly{{ $item->id }}">Driver Only</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="form-group mb-3">
+                                            <!-- Tanggal -->
+                                            <div class="col-md-6 mb-3">
                                                 <label for="tanggal{{ $item->id }}" class="form-label">Tanggal</label>
                                                 <input type="date" class="form-control" id="tanggal{{ $item->id }}"
-                                                    name="tanggal" value="{{ $item->tanggal }}" required>
+                                                    name="tanggal"
+                                                    value="{{ \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d') }}">
                                             </div>
-                                            <div class="form-group mb-3">
-                                                <label for="no_surat_jalan{{ $item->id }}" class="form-label">Nomor
-                                                    Surat Jalan</label>
-                                                <input type="text" class="form-control"
-                                                    id="no_surat_jalan{{ $item->id }}" name="no_surat_jalan"
-                                                    value="{{ $item->no_surat_jalan }}" readonly>
+                                            <!-- Nama Karyawan (hanya jika jenis_pemesanan = karyawan) -->
+                                            <div class="col-md-6 mb-3 form-karyawan" @if($item->jenis_pemesanan !=
+                                                'Karyawan') style="display:none;" @endif>
+                                                <label for="karyawan_id{{ $item->id }}" class="form-label">Nama
+                                                    Karyawan</label>
+                                                <select class="form-select select2" id="karyawan_id{{ $item->id }}"
+                                                    name="karyawan_id[]" multiple>
+                                                    @foreach($karyawan as $k)
+                                                    <option value="{{ $k->id }}" @if($item->
+                                                        karyawans->pluck('id')->contains($k->id)) selected @endif>{{
+                                                        $k->nama_karyawan }}</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
-                                            <div id="formKaryawan{{ $item->id }}"
-                                                style="display: {{ $item->jenis_pemesanan === 'Karyawan' ? 'block' : 'none' }}">
-                                                <div class="form-group mb-3">
-                                                    <label for="id_karyawan{{ $item->id }}" class="form-label">Nama
-                                                        Karyawan</label>
-                                                    <div class="input-group">
-                                                        <select class="form-select select2"
-                                                            id="id_karyawan{{ $item->id }}" name="karyawan_id[]"
-                                                            multiple {{ $item->jenis_pemesanan === 'Karyawan' ? 'required' : '' }}>
-                                                            @foreach($karyawan as $k)
-                                                            <option value="{{ $k->id }}" {{ in_array($k->id,
-                                                                $item->karyawans->pluck('id')->toArray()) ? 'selected' :
-                                                                '' }}>
-                                                                {{ $k->nik }} | {{ $k->nama_karyawan }}
-                                                            </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                </div>
+                                            <!-- Departemen (hanya jika jenis_pemesanan = Driver Only) -->
+                                            @php
+                                            $selectedDepartemenId = $item->suratJalanDetail->first()->id_departemen ??
+                                            null;
+                                            @endphp
+                                            <div class="col-md-6 mb-3 form-driveronly" @if($item->jenis_pemesanan !=
+                                                'Driver Only') style="display:none;" @endif>
+                                                <label for="departemen{{ $item->id }}"
+                                                    class="form-label">Departemen</label>
+                                                <select class="form-select select2" id="departemen{{ $item->id }}"
+                                                    name="id_departemen">
+                                                    <option value="">Pilih Departemen</option>
+                                                    @foreach($departemen as $dpt)
+                                                    <option value="{{ $dpt->id }}" @if($selectedDepartemenId==$dpt->id)
+                                                        selected @endif>{{ $dpt->nama_departemen }}</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
-                                            <div id="formDriverOnly{{ $item->id }}"
-                                                style="display: {{ $item->jenis_pemesanan === 'Driver Only' ? 'block' : 'none' }}">
-                                                <div class="form-group mb-3">
-                                                    <label for="id_departemen{{ $item->id }}"
-                                                        class="form-label">Departemen</label>
-                                                    <select class="form-select select2"
-                                                        id="id_departemen{{ $item->id }}" name="id_departemen"
-                                                        {{ $item->jenis_pemesanan === 'Driver Only' ? 'required' : '' }}>
-                                                        <option value="">Pilih Departemen</option>
-                                                        @foreach($departemen as $d)
-                                                        <option value="{{ $d->id }}" {{ $item->id_departemen ==
-                                                            $d->id ? 'selected' : '' }}>
-                                                            {{ $d->nama_departemen }}
-                                                        </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
+                                            <!-- Tujuan -->
+                                            <div class="col-md-6 mb-3">
+                                                <label for="lokasi_id{{ $item->id }}" class="form-label">Tujuan</label>
+                                                <select class="form-select select2" id="lokasi_id{{ $item->id }}"
+                                                    name="lokasi_id[]" multiple>
+                                                    @foreach($lokasi as $l)
+                                                    <option value="{{ $l->id }}" @if($item->
+                                                        lokasis->pluck('id')->contains($l->id)) selected @endif>{{
+                                                        $l->kode_lokasi }}</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
-
-                                            <div class="form-group mb-3">
+                                            <!-- Jam Berangkat -->
+                                            <div class="col-md-6 mb-3">
                                                 <label for="jam_berangkat{{ $item->id }}" class="form-label">Jam
                                                     Berangkat</label>
                                                 <input type="time" class="form-control"
                                                     id="jam_berangkat{{ $item->id }}" name="jam_berangkat"
-                                                    value="{{ $item->jam_berangkat }}" required>
+                                                    value="{{ $item->jam_berangkat }}" @if($item->status !== 'Dipesan')
+                                                disabled @endif>
                                             </div>
-                                            <div class="form-group mb-3">
+                                            <!-- Jam Kembali (readonly) -->
+                                            <div class="col-md-6 mb-3">
                                                 <label for="jam_kembali{{ $item->id }}" class="form-label">Jam
                                                     Kembali</label>
                                                 <input type="time" class="form-control" id="jam_kembali{{ $item->id }}"
-                                                    name="jam_kembali" value="{{ $item->jam_kembali }}" required>
+                                                    name="jam_kembali" value="{{ $item->jam_kembali }}" readonly>
                                             </div>
-
-                                            @if(Auth::user()->role === 'superadmin')
-                                            <div class="form-group mb-3">
+                                            <!-- Nama Driver -->
+                                            <div class="col-md-6 mb-3">
                                                 <label for="id_driver{{ $item->id }}" class="form-label">Nama
                                                     Driver</label>
                                                 <select class="form-select select2" id="id_driver{{ $item->id }}"
-                                                    name="id_driver" required>
+                                                    name="id_driver" @if(Auth::user()->role !== 'hrga') disabled @endif>
                                                     <option value="">Pilih Driver</option>
-                                                    @foreach($driver as $d)
-                                                    @if($d->status === 'Available' || $item->id_driver == $d->id)
-                                                    <option value="{{ $d->id }}" {{ $item->id_driver == $d->id ?
-                                                        'selected' : '' }}>
-                                                        {{ $d->nama_driver }}
+                                                    @foreach($driver->where('status', 'Tersedia') as $d)
+                                                    <option value="{{ $d->id }}" @if($item->id_driver == $d->id)
+                                                        selected @endif>{{ $d->nama_driver }}</option>
+                                                    @endforeach
+                                                    @if($item->id_driver && !$driver->where('status', 'Tersedia')->contains('id', $item->id_driver))
+                                                    <option value="{{ $item->id_driver }}" selected>
+                                                        {{ $item->driver->nama_driver ?? 'Driver tidak ditemukan' }}
                                                     </option>
                                                     @endif
-                                                    @endforeach
                                                 </select>
                                             </div>
-                                            @endif
-
-                                            <div class="form-group mb-3">
+                                            <!-- Keterangan -->
+                                            <div class="col-md-12 mb-3">
                                                 <label for="keterangan{{ $item->id }}"
                                                     class="form-label">Keterangan</label>
-                                                <textarea class="form-control h-px-100" id="keterangan{{ $item->id }}"
-                                                    name="keterangan" required>{{ $item->keterangan }}</textarea>
+                                                <textarea class="form-control" id="keterangan{{ $item->id }}"
+                                                    name="keterangan" rows="2">{{ $item->keterangan }}</textarea>
                                             </div>
                                         </div>
-                                        <div class="form-group mb-3">
-                                            <label for="id_lokasi{{ $item->id }}" class="form-label">Lokasi</label>
-                                            <select class="form-select select2" id="id_lokasi{{ $item->id }}"
-                                                name="lokasi_id[]" multiple required>
-                                                @foreach($lokasi as $l)
-                                                <option value="{{ $l->id }}" {{ in_array($l->id,
-                                                    $item->lokasis->pluck('id')->toArray()) ? 'selected' : '' }}>
-                                                    {{ $l->nama_lokasi }}
-                                                </option>
-                                                @endforeach
-                                            </select>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Tutup</button>
+                                            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                                         </div>
-                                        <input type="hidden" class="form-control" id="PIC{{ $item->id }}" name="PIC"
-                                            value="{{ auth()->user()->name }}" required>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" class="btn btn-primary">
-                                            <span class="spinner-border spinner-border-sm d-none" role="status"
-                                                aria-hidden="true" id="submitSpinner{{ $item->id }}"></span>
-                                            <span id="submitText{{ $item->id }}">Simpan Perubahan</span>
-                                        </button>
-                                    </div>
-                                </form>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -384,12 +433,6 @@ use Illuminate\Support\Facades\Auth;
 @endpush
 
 @push('after-script')
-<script src="{{ asset('assets/vendor/libs/datatables-buttons/datatables-buttons.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/jszip/jszip.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/pdfmake/pdfmake.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/datatables-buttons/buttons.html5.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/datatables-buttons/buttons.print.js') }}"></script>
 <script>
     // Fungsi untuk mendapatkan CSRF token
     function getCsrfToken() {
@@ -397,14 +440,21 @@ use Illuminate\Support\Facades\Auth;
     }
 
     $(document).ready(function() {
-        // Set nilai default tanggal ke hari ini
-        const today = new Date().toISOString().split('T')[0];
-        $('#start_date').val(today);
-        $('#end_date').val(today);
+        // Set nilai default tanggal ke hari ini jika tidak ada parameter di URL
+        if (!window.location.search.includes('start_date') && !window.location.search.includes('end_date')) {
+            const today = new Date().toISOString().split('T')[0];
+            $('#start_date').val(today);
+            $('#end_date').val(today);
+            $('#filterForm').submit();
+        }
 
         // Inisialisasi DataTable
         const table = $('#pemesananMobilTable').DataTable({
             order: [[1, 'asc']],
+            scrollX: false,
+            scrollY: 500,
+            paging: false,
+            scrollCollapse: true,
             buttons: [
                 {
                     extend: 'print',
@@ -437,70 +487,22 @@ use Illuminate\Support\Facades\Auth;
                     searchable: false
                 }
             ]
-        });
 
-        // Fungsi untuk filter tanggal
-        function filterByDate() {
-            const startDate = $('#start_date').val();
-            const endDate = $('#end_date').val();
-
-            if (startDate && endDate) {
-                // Konversi format tanggal untuk perbandingan
-                const start = new Date(startDate + 'T00:00:00');
-                const end = new Date(endDate + 'T23:59:59');
-
-                // Filter data berdasarkan tanggal
-                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                    const dateStr = data[2]; // Kolom tanggal (index 2)
-                    if (!dateStr) return false;
-
-                    try {
-                        // Parse tanggal dari format dd/mm/yy
-                        const [day, month, year] = dateStr.split('/');
-                        const rowDate = new Date(2000 + parseInt(year), parseInt(month) - 1, parseInt(day));
-
-                        // Debug log
-                        console.log('Row Date:', rowDate);
-                        console.log('Start Date:', start);
-                        console.log('End Date:', end);
-
-                        // Periksa apakah tanggal berada dalam rentang
-                        const isInRange = rowDate >= start && rowDate <= end;
-                        console.log('Is in range:', isInRange);
-
-                        return isInRange;
-                    } catch (error) {
-                        console.error('Error parsing date:', error);
-                        return false;
-                    }
-                });
-
-                table.draw();
-                // Hapus filter setelah digunakan
-                $.fn.dataTable.ext.search.pop();
-            } else {
-                // Jika tanggal tidak lengkap, tampilkan semua data
-                table.draw();
-            }
-        }
-
-        // Event listener untuk tombol filter
-        $('#filter_date').on('click', function() {
-            filterByDate();
         });
 
         // Event listener untuk input tanggal
         $('#start_date, #end_date').on('change', function() {
             if ($('#start_date').val() && $('#end_date').val()) {
-                filterByDate();
+                $('#filterSpinner').removeClass('d-none');
+                $('#filterText').text('Memuat...');
+                $('#filterForm').submit();
             }
         });
 
-        // Jalankan filter saat halaman dimuat
-        $(window).on('load', function() {
-            setTimeout(function() {
-                filterByDate();
-            }, 500);
+        // Event listener untuk form submit
+        $('#filterForm').on('submit', function() {
+            $('#filterSpinner').removeClass('d-none');
+            $('#filterText').text('Memuat...');
         });
 
         // Fungsi untuk export tabel
@@ -523,11 +525,13 @@ use Illuminate\Support\Facades\Auth;
         };
 
         // Handle Select All checkbox
-        $('#selectAll').on('change', function() {
-            const isChecked = $(this).prop('checked');
-            $('.item-checkbox').prop('checked', isChecked);
-            updateDeleteButtonVisibility();
-        });
+        if ($('#selectAll').length > 0) {
+            $('#selectAll').on('change', function() {
+                const isChecked = $(this).prop('checked');
+                $('.item-checkbox').prop('checked', isChecked);
+                updateDeleteButtonVisibility();
+            });
+        }
 
         // Handle individual checkboxes
         $(document).on('change', '.item-checkbox', function() {
@@ -539,158 +543,85 @@ use Illuminate\Support\Facades\Auth;
         function updateSelectAllState() {
             const totalCheckboxes = $('.item-checkbox').length;
             const checkedCheckboxes = $('.item-checkbox:checked').length;
-            $('#selectAll').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
+            if ($('#selectAll').length > 0) {
+                $('#selectAll').prop('checked', totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes);
+            }
         }
 
         // Function to update delete button visibility
         function updateDeleteButtonVisibility() {
             const checkedCount = $('.item-checkbox:checked').length;
-            $('#deleteSelectedBtn').toggle(checkedCount > 0);
+            if ($('#deleteSelectedBtn').length > 0) {
+                $('#deleteSelectedBtn').toggle(checkedCount > 0);
+            }
         }
 
         // Handle delete selected button click
-        $('#deleteSelectedBtn').click(function() {
-            const selectedIds = $('.item-checkbox:checked').map(function() {
-                return $(this).data('id');
-            }).get();
+        if ($('#deleteSelectedBtn').length > 0) {
+            $('#deleteSelectedBtn').click(function() {
+                const selectedIds = $('.item-checkbox:checked').map(function() {
+                    return $(this).data('id');
+                }).get();
 
-            if (selectedIds.length === 0) return;
+                if (selectedIds.length === 0) return;
 
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: `Anda akan menghapus ${selectedIds.length} data yang dipilih!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Tampilkan loading
-                    Swal.fire({
-                        title: 'Memproses...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Kirim request untuk menghapus data yang dipilih
-                    fetch('/surat-jalan/delete-selected', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            ids: selectedIds
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: 'Data yang dipilih berhasil dihapus',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        } else {
-                            throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: `Anda akan menghapus ${selectedIds.length} data yang dipilih!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Tampilkan loading
                         Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: error.message || 'Terjadi kesalahan saat menghapus data'
+                            title: 'Memproses...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
                         });
-                    });
-                }
-            });
-        });
 
-        // Event listener untuk tombol set jam kembali
-        $(document).on('click', '.btn-set-jam-kembali', function() {
-            const id = $(this).data('id');
-            setJamKembali(id);
-        });
-
-        // Fungsi untuk mengisi jam kembali
-        function setJamKembali(id) {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const currentTime = `${hours}:${minutes}`;
-
-            Swal.fire({
-                title: 'Konfirmasi',
-                text: 'Apakah Anda yakin ingin mengisi jam kembali aktual dan mengubah status driver menjadi available?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, isi jam kembali',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Tampilkan loading
-                    Swal.fire({
-                        title: 'Memproses...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    fetch(`/surat-jalan/${id}/update-jam-kembali`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': getCsrfToken()
-                        },
-                        body: JSON.stringify({
-                            jam_kembali: currentTime,
-                            jam_kembali_aktual: currentTime
+                        // Kirim request untuk menghapus data yang dipilih
+                        fetch('/surat-jalan/delete-selected', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': getCsrfToken()
+                            },
+                            body: JSON.stringify({
+                                ids: selectedIds
+                            })
                         })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if(data.success) {
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Data yang dipilih berhasil dihapus',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message || 'Terjadi kesalahan saat menghapus data');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
                             Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: 'Jam kembali berhasil diupdate',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                window.location.reload();
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: error.message || 'Terjadi kesalahan saat menghapus data'
                             });
-                        } else {
-                            throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: error.message || 'Terjadi kesalahan saat mengupdate jam kembali'
                         });
-                    });
-                }
+                    }
+                });
             });
         }
 
@@ -709,12 +640,12 @@ use Illuminate\Support\Facades\Auth;
 
             Swal.fire({
                 title: 'Konfirmasi',
-                text: 'Apakah Anda yakin ingin mengisi jam berangkat aktual?',
+                text: 'Apakah Anda yakin ingin mengupdate jam berangkat?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, isi jam berangkat',
+                confirmButtonText: 'Ya, update jam berangkat',
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
@@ -734,8 +665,7 @@ use Illuminate\Support\Facades\Auth;
                             'X-CSRF-TOKEN': getCsrfToken()
                         },
                         body: JSON.stringify({
-                            jam_berangkat: currentTime,
-                            jam_berangkat_aktual: currentTime
+                            jam_berangkat: currentTime
                         })
                     })
                     .then(response => {
@@ -773,6 +703,84 @@ use Illuminate\Support\Facades\Auth;
             });
         }
 
+        // Event listener untuk tombol set jam kembali
+        $(document).on('click', '.btn-set-jam-kembali', function() {
+            const id = $(this).data('id');
+            setJamKembali(id);
+        });
+
+        // Fungsi untuk mengisi jam kembali
+        function setJamKembali(id) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
+
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin mengupdate jam kembali?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, update jam kembali',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(`/surat-jalan/${id}/update-jam-kembali`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        },
+                        body: JSON.stringify({
+                            jam_kembali: currentTime
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Jam kembali berhasil diupdate',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat mengupdate jam kembali');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message || 'Terjadi kesalahan saat mengupdate jam kembali'
+                        });
+                    });
+                }
+            });
+        }
+
         // Handle jenis pemesanan radio buttons untuk form tambah
         $('input[name="jenis_pemesanan"]').change(function() {
             if ($(this).val() === 'karyawan') {
@@ -794,15 +802,11 @@ use Illuminate\Support\Facades\Auth;
             const itemId = modalId.replace('editPemesananMobilModal', '');
 
             if ($(this).val() === 'karyawan') {
-                $(`#formKaryawan${itemId}`).show();
-                $(`#formDriverOnly${itemId}`).hide();
-                $(`#id_karyawan${itemId}`).prop('required', true);
-                $(`#departemen${itemId}`).prop('required', false);
+                $(`#karyawan_id${itemId}`).closest('.form-karyawan').show();
+                $(`#departemen${itemId}`).closest('.form-driveronly').hide();
             } else {
-                $(`#formKaryawan${itemId}`).hide();
-                $(`#formDriverOnly${itemId}`).show();
-                $(`#id_karyawan${itemId}`).prop('required', false);
-                $(`#departemen${itemId}`).prop('required', true);
+                $(`#karyawan_id${itemId}`).closest('.form-karyawan').hide();
+                $(`#departemen${itemId}`).closest('.form-driveronly').show();
             }
         });
 
@@ -953,6 +957,224 @@ use Illuminate\Support\Facades\Auth;
                 }
             });
         });
+
+        // Handle approve manager button click
+        $(document).on('click', '.btn-approve-manager', function() {
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin menyetujui surat jalan ini sebagai manager departemen?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, setujui',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(`/surat-jalan/${id}/approve-manager`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.message || 'Terjadi kesalahan saat menyetujui surat jalan');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Surat jalan berhasil disetujui oleh manager',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat menyetujui surat jalan');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message || 'Terjadi kesalahan saat menyetujui surat jalan'
+                        });
+                    });
+                }
+            });
+        });
+
+        // Handle approve HRGA button click
+        $(document).on('click', '.btn-approve-hrga', function() {
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin mengkonfirmasi surat jalan ini sebagai HRGA?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, konfirmasi',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Kirim request dengan CSRF token
+                    $.ajax({
+                        url: `/surat-jalan/${id}/approve-hrga`,
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            if(response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Surat jalan berhasil dikonfirmasi oleh HRGA',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: response.message || 'Terjadi kesalahan saat mengkonfirmasi surat jalan'
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            let errorMessage = 'Terjadi kesalahan saat mengkonfirmasi surat jalan';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: errorMessage
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Tambahkan event click untuk menampilkan/menyembunyikan child row
+        $('#pemesananMobilTable tbody').on('click', 'tr:not(.child-row)', function() {
+            const id = $(this).data('id');
+            const childRow = $(`tr.child-row[data-id="${id}"]`);
+
+            if (childRow.length) {
+                if (childRow.is(':visible')) {
+                    childRow.hide();
+                    $(this).removeClass('shown');
+                } else {
+                    childRow.show();
+                    $(this).addClass('shown');
+                }
+            }
+        });
+
+        // Handle check security button click
+        $(document).on('click', '.btn-check-security', function() {
+            const id = $(this).data('id');
+
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin menyetujui surat jalan ini sebagai security?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, setujui',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tampilkan loading
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(`/surat-jalan/${id}/check-security`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': getCsrfToken()
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.message || 'Terjadi kesalahan saat menyetujui surat jalan');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if(data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Surat jalan berhasil disetujui sebagai security',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Terjadi kesalahan saat menyetujui surat jalan');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message || 'Terjadi kesalahan saat menyetujui surat jalan'
+                        });
+                    });
+                }
+            });
+        });
+
+
+        // Tambahkan style untuk row yang bisa diklik
+        $('#pemesananMobilTable tbody tr:not(.child-row)').css('cursor', 'pointer');
     });
 </script>
 @endpush

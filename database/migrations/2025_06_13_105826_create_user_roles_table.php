@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lokasis', function (Blueprint $table) {
+        Schema::create('user_roles', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_lokasi');
-            $table->string('nama_lokasi');
-            $table->string('alamat');
+            $table->foreignId('id_user')->constrained('users')->onDelete('cascade');
+            $table->enum('role_type', ['admin', 'manager', 'hrga', 'security', 'user'])->default('user');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lokasis');
+        Schema::dropIfExists('user_roles');
     }
 };

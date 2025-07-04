@@ -22,7 +22,7 @@ class LokasiController extends Controller
 
             // Validasi input
             $validated = $request->validate([
-                'kode_lokasi' => 'required|string|max:255|unique:lokasis',
+                'kode_lokasi' => 'required|string|max:255|unique:lokasi',
                 'nama_lokasi' => 'required|string|max:255',
                 'alamat' => 'required|string',
             ]);
@@ -31,12 +31,41 @@ class LokasiController extends Controller
             $lokasi = Lokasi::create($validated);
 
             if ($lokasi) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Lokasi berhasil ditambahkan',
+                        'data' => $lokasi
+                    ]);
+                }
                 return redirect()->back()->with('success', 'Lokasi berhasil ditambahkan');
             } else {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Gagal menambahkan lokasi'
+                    ], 422);
+                }
                 return redirect()->back()->with('error', 'Gagal menambahkan lokasi');
             }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation error saat menambah lokasi: ' . $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             Log::error('Error saat menambah lokasi: ' . $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menambahkan lokasi: ' . $e->getMessage()
+                ], 500);
+            }
             return redirect()->back()->with('error', 'Gagal menambahkan lokasi: ' . $e->getMessage());
         }
     }

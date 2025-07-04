@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('surat_jalan_detail', function (Blueprint $table) {
+        Schema::create('karyawan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('surat_jalan_id')->constrained('surat_jalans')->onDelete('cascade');
-            $table->foreignId('lokasi_id')->constrained('lokasis')->onDelete('cascade');
-            $table->foreignId('karyawan_id')->nullable()->constrained('karyawans')->onDelete('cascade');
+            $table->string('NIK')->unique();
+            $table->string('nama_karyawan');
+            $table->string('jabatan');
+            $table->foreignId('id_departemen')->constrained('departemen')->onDelete('cascade');
+            $table->string('karyawan_image')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('surat_jalan_detail');
+        Schema::dropIfExists('karyawan');
     }
 };

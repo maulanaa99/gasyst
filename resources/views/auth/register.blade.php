@@ -134,6 +134,45 @@
                             @enderror
                         </div>
 
+                        <!-- Phone Number -->
+                        <div class="form-floating form-floating-outline mb-5 form-control-validation">
+                            <input type="text" class="form-control @error('phone_number') is-invalid @enderror"
+                                id="phone_number" name="phone_number" value="{{ old('phone_number') }}"
+                                placeholder="Enter your phone number" />
+                            <label for="phone_number">Phone Number</label>
+                            @error('phone_number')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Address -->
+                        <div class="form-floating form-floating-outline mb-5 form-control-validation">
+                            <textarea class="form-control @error('address') is-invalid @enderror"
+                                id="address" name="address" placeholder="Enter your address"
+                                style="height: 100px">{{ old('address') }}</textarea>
+                            <label for="address">Address</label>
+                            @error('address')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Department -->
+                        <div class="form-floating form-floating-outline mb-5 form-control-validation">
+                            <select id="id_departemen" name="id_departemen"
+                                class="form-select @error('id_departemen') is-invalid @enderror">
+                                <option value="" disabled selected>Select Department</option>
+                                @foreach($departments as $department)
+                                    <option value="{{ $department->id }}" {{ old('id_departemen') == $department->id ? 'selected' : '' }}>
+                                        {{ $department->nama_departemen }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <label for="id_departemen">Department</label>
+                            @error('id_departemen')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Password -->
                         <div class="mb-5 form-password-toggle form-control-validation">
                             <div class="input-group input-group-merge">
@@ -188,17 +227,31 @@
                             </div>
                         </div>
 
+                        <!-- Signature -->
+                        <div class="form-floating form-floating-outline mb-5 form-control-validation">
+                            <input type="file" class="form-control @error('signature') is-invalid @enderror"
+                                id="signature" name="signature" accept="image/*"
+                                onchange="previewSignature(this)" />
+                            <label for="signature">Signature</label>
+                            @error('signature')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="mt-2">
+                                <img id="signaturePreview" src="#" alt="Signature Preview" style="max-width: 200px; display: none;"
+                                    class="img-thumbnail">
+                            </div>
+                        </div>
+
                         <!-- Role -->
                         <div class="form-floating form-floating-outline mb-5 form-control-validation">
                             <select id="role" name="role" class="form-select @error('role') is-invalid @enderror"
                                 required>
                                 <option value="" disabled selected>Select Role</option>
-                                <option value="superadmin" {{ old('role')=='superadmin' ? 'selected' : '' }}>Superadmin
-                                </option>
                                 <option value="admin" {{ old('role')=='admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="manager" {{ old('role')=='manager' ? 'selected' : '' }}>Manager</option>
+                                <option value="hrga" {{ old('role')=='hrga' ? 'selected' : '' }}>HRGA</option>
+                                <option value="security" {{ old('role')=='security' ? 'selected' : '' }}>Security</option>
                                 <option value="user" {{ old('role')=='user' ? 'selected' : '' }}>User</option>
-                                <option value="security" {{ old('role')=='security' ? 'selected' : '' }}>Security
-                                </option>
                             </select>
                             <label for="role">Role</label>
                             @error('role')
@@ -250,6 +303,22 @@
     <script>
         function previewImage(input) {
             const preview = document.getElementById('imagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function previewSignature(input) {
+            const preview = document.getElementById('signaturePreview');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
 

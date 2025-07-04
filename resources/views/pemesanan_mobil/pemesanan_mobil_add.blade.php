@@ -46,9 +46,7 @@
                             </div>
                             <div class="form-group mb-3">
                                 <label for="no_surat_jalan" class="form-label">Nomor Surat Jalan</label>
-                                <input type="text" class="form-control" id="no_surat_jalan" name="no_surat_jalan"
-                                    value="SJ-{{ date('Ymd') }}-{{ str_pad(App\Models\SuratJalan::count() + 1, 4, '0', STR_PAD_LEFT) }}"
-                                    readonly>
+                                <input type="text" class="form-control" id="no_surat_jalan" name="no_surat_jalan" disabled>
                             </div>
                             <div id="formKaryawan">
                                 <div class="form-group mb-3">
@@ -57,7 +55,7 @@
                                         <select class="form-select select2" id="id_karyawan" name="karyawan_id[]"
                                             multiple required>
                                             @foreach($karyawan as $karyawans)
-                                            <option value="{{ $karyawans->id }}">{{ $karyawans->nik }} | {{
+                                            <option value="{{ $karyawans->id }}">{{ $karyawans->NIK }} | {{
                                                 $karyawans->nama_karyawan }}</option>
                                             @endforeach
                                         </select>
@@ -69,11 +67,11 @@
                                     <label for="id_departemen" class="form-label">Departemen</label>
                                     <select class="form-select select2" id="id_departemen" name="id_departemen">
                                         <option value="">Pilih Departemen</option>
-                                        @foreach($departemen as $departemen)
-                                        <option value="{{ $departemen->id }}">{{ $departemen->nama_departemen }}
-                                        </option>
+                                        @foreach($departemen as $dept)
+                                        <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option>
                                         @endforeach
                                     </select>
+                                    <div class="invalid-feedback">Departemen harus dipilih</div>
                                 </div>
                             </div>
 
@@ -119,8 +117,6 @@
                                 </div>
                             </div>
                         </div>
-                        <input type="hidden" class="form-control" id="PIC" name="PIC" value="{{ auth()->user()->name }}"
-                            required>
                     </div>
                     <div class="card-footer">
                         <button type="button" class="btn btn-secondary" onclick="window.history.back()">Kembali</button>
@@ -152,16 +148,19 @@
                                 </button>
                             </div>
                             <input type="hidden" id="id_lokasi" name="id_lokasi">
+                            <div class="invalid-feedback">Kode lokasi harus diisi</div>
                         </div>
                         <div class="form-group mb-3">
                             <label for="nama_lokasi" class="form-label">Nama Lokasi</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="nama_lokasi" name="nama_lokasi" required>
                             </div>
+                            <div class="invalid-feedback">Nama lokasi harus diisi</div>
                         </div>
                         <div class="form-group mb-3">
                             <label for="alamat" class="form-label">Alamat Lokasi</label>
                             <textarea class="form-control" id="alamat" name="alamat" rows="3" required></textarea>
+                            <div class="invalid-feedback">Alamat lokasi harus diisi</div>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -202,38 +201,51 @@
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
+                    <table class="table table-hover table-striped">
+                        <thead class="table-light">
                             <tr>
-                                <th>No</th>
+                                <th class="text-center" style="width: 50px">No</th>
                                 <th>Kode Lokasi</th>
                                 <th>Nama Lokasi</th>
                                 <th>Alamat</th>
                                 <th>Keterangan</th>
-                                <th>Aksi</th>
+                                <th class="text-center" style="width: 100px">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="lokasiTableBody">
-                            @foreach($lokasi as $l)
+                            @forelse($lokasi as $l)
                             <tr>
-                                <td>{{ $loop->iteration }}</td>
+                                <td class="text-center">{{ $loop->iteration }}</td>
                                 <td>{{ $l->kode_lokasi }}</td>
                                 <td>{{ $l->nama_lokasi }}</td>
                                 <td>{{ $l->alamat }}</td>
-                                <td>{{ $l->keterangan }}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-primary select-lokasi"
-                                        data-id="{{ $l->id }}" data-kode="{{ $l->kode_lokasi }}"
-                                        data-nama="{{ $l->nama_lokasi }}" data-alamat="{{ $l->alamat }}">
-                                        <i class="icon-base ri ri-check-line"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger delete-lokasi"
-                                        data-id="{{ $l->id }}" data-nama="{{ $l->nama_lokasi }}">
-                                        <i class="icon-base ri ri-delete-bin-line"></i>
-                                    </button>
+                                <td>{{ $l->keterangan ?? '-' }}</td>
+                                <td class="text-center">
+                                    <div class="d-inline-block">
+                                        <button type="button" class="btn btn-sm btn-primary select-lokasi"
+                                            data-id="{{ $l->id }}"
+                                            data-kode="{{ $l->kode_lokasi }}"
+                                            data-nama="{{ $l->nama_lokasi }}"
+                                            data-alamat="{{ $l->alamat }}"
+                                            data-bs-toggle="tooltip"
+                                            title="Pilih Lokasi">
+                                            <i class="icon-base ri ri-check-line"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger delete-lokasi"
+                                            data-id="{{ $l->id }}"
+                                            data-nama="{{ $l->nama_lokasi }}"
+                                            data-bs-toggle="tooltip"
+                                            title="Hapus Lokasi">
+                                            <i class="icon-base ri ri-delete-bin-line"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
-                            @endforeach
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center">Tidak ada data lokasi</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -251,58 +263,133 @@
 @push('page-script')
 <script>
     $(document).ready(function() {
+        // Fungsi untuk mendapatkan nomor surat jalan
+        function getNextNumber(tanggal = null) {
+            console.log('Mendapatkan nomor surat jalan untuk tanggal:', tanggal);
+            const currentDate = tanggal || $('#tanggal').val();
+
+            if (!currentDate) {
+                console.error('Tanggal tidak tersedia');
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Tanggal harus diisi terlebih dahulu',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route("surat-jalan.get-next-number") }}',
+                type: 'GET',
+                data: {
+                    tanggal: currentDate
+                },
+                success: function(response) {
+                    console.log('Response nomor surat jalan:', response);
+                    if (response.success) {
+                        $('#no_surat_jalan').val(response.no_surat_jalan);
+                        // Enable submit button jika sebelumnya disabled
+                        $('#submitBtn').prop('disabled', false);
+                    } else {
+                        console.error('Gagal mendapatkan nomor surat jalan:', response.message);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message || 'Gagal mendapatkan nomor surat jalan',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        // Disable submit button jika gagal mendapatkan nomor
+                        $('#submitBtn').prop('disabled', true);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error saat mendapatkan nomor surat jalan:', xhr);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat mendapatkan nomor surat jalan',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    // Disable submit button jika terjadi error
+                    $('#submitBtn').prop('disabled', true);
+                }
+            });
+        }
+
+        // Panggil fungsi saat halaman dimuat
+        getNextNumber();
+
+        // Event handler untuk perubahan tanggal
+        $('#tanggal').on('change', function() {
+            const submitBtn = $('#submitBtn');
+            submitBtn.prop('disabled', true); // Disable submit button saat tanggal berubah
+            getNextNumber($(this).val());
+        });
+
         // Script untuk toggle form karyawan/driver only
         $('input[name="jenis_pemesanan"]').on('change', function() {
+            console.log('Jenis pemesanan berubah:', this.value);
             if (this.value === 'Karyawan') {
                 $('#formKaryawan').show();
                 $('#formDriverOnly').hide();
                 $('#id_karyawan').prop('required', true);
                 $('#id_departemen').prop('required', false);
+                $('#id_departemen').val('').trigger('change');
             } else {
                 $('#formKaryawan').hide();
                 $('#formDriverOnly').show();
                 $('#id_karyawan').prop('required', false);
                 $('#id_departemen').prop('required', true);
+                $('#id_karyawan').val('').trigger('change');
             }
         });
 
         // Script untuk form submission pemesanan mobil
         $('#addPemesananMobilForm').on('submit', function(e) {
             e.preventDefault();
-            console.log('Form submission started');
+            console.log('Form submission dimulai');
 
             const formData = new FormData(this);
-            console.log('Form data:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
-
             const jenisPemesanan = $('input[name="jenis_pemesanan"]:checked').val();
             const karyawanSelect = $('#id_karyawan');
             const departemenSelect = $('#id_departemen');
             const lokasiSelect = $('#id_lokasi');
+            const noSuratJalan = $('#no_surat_jalan').val();
 
-            console.log('Jenis Pemesanan:', jenisPemesanan);
-            console.log('Karyawan Value:', karyawanSelect.val());
-            console.log('Departemen Value:', departemenSelect.val());
-            console.log('Lokasi Value:', lokasiSelect.val());
+            // Validasi no surat jalan
+            if (!noSuratJalan) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Nomor surat jalan belum tersedia. Mohon tunggu sebentar atau refresh halaman.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            // Log data yang akan dikirim
+            console.log('Data yang akan dikirim:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
 
             // Validasi berdasarkan jenis pemesanan
-            if (jenisPemesanan === 'Karyawan') {
-                if (!karyawanSelect.val()) {
+            if (jenisPemesanan === 'Driver Only') {
+                if (!departemenSelect.val()) {
                     Swal.fire({
                         title: 'Error!',
-                        text: 'Silakan pilih karyawan terlebih dahulu',
+                        text: 'Silakan pilih departemen terlebih dahulu',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
                     return;
                 }
             } else {
-                if (!departemenSelect.val()) {
+                if (!karyawanSelect.val()) {
                     Swal.fire({
                         title: 'Error!',
-                        text: 'Silakan pilih departemen terlebih dahulu',
+                        text: 'Silakan pilih karyawan terlebih dahulu',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
@@ -321,53 +408,160 @@
                 return;
             }
 
+            // Jika validasi berhasil, submit form
             const submitBtn = $('#submitBtn');
             const submitSpinner = $('#submitSpinner');
             const submitText = $('#submitText');
 
-            // Disable button and show spinner
+            // Disable button dan tampilkan spinner
             submitBtn.prop('disabled', true);
             submitSpinner.removeClass('d-none');
             submitText.text('Menyimpan...');
 
-            console.log('Submitting form...');
-            // Submit form
-            this.submit();
+            // Siapkan data untuk dikirim
+            const data = {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                tanggal: formData.get('tanggal'),
+                no_surat_jalan: noSuratJalan,
+                jam_berangkat: formData.get('jam_berangkat'),
+                jam_kembali: formData.get('jam_kembali'),
+                driver_id: formData.get('driver_id'),
+                keterangan: formData.get('keterangan'),
+                jenis_pemesanan: jenisPemesanan,
+                lokasi_id: lokasiSelect.val()
+            };
+
+            // Tambahkan data sesuai jenis pemesanan
+            if (jenisPemesanan === 'Driver Only') {
+                data.id_departemen = departemenSelect.val();
+            } else {
+                data.karyawan_id = karyawanSelect.val();
+            }
+
+            console.log('Data yang akan dikirim:', data);
+
+            // Kirim form dengan AJAX
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: data,
+                success: function(response) {
+                    console.log('Response:', response);
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: response.message,
+                            icon: 'success'
+                        }).then(() => {
+                            window.location.href = '{{ route("surat-jalan.index") }}';
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message,
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error:', xhr.responseJSON);
+                    let errorMessage = 'Terjadi kesalahan saat menyimpan data';
+
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        errorMessage = Object.values(errors).flat().join('\n');
+                    }
+
+                    Swal.fire({
+                        title: 'Error!',
+                        text: errorMessage,
+                        icon: 'error'
+                    });
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false);
+                    submitSpinner.addClass('d-none');
+                    submitText.text('Simpan');
+                }
+            });
         });
 
         // Inisialisasi select2
         $('#id_karyawan').select2({
             width: '100%',
             placeholder: 'Pilih Karyawan'
+        }).on('change', function() {
+            console.log('Karyawan dipilih:', $(this).val());
         });
 
         $('#id_departemen').select2({
             width: '100%',
-            placeholder: 'Pilih Departemen'
+            placeholder: 'Pilih Departemen',
+            allowClear: true
+        }).on('change', function() {
+            console.log('Departemen dipilih:', $(this).val());
         });
 
         $('#id_lokasi').select2({
             width: '100%',
             placeholder: 'Pilih Lokasi'
+        }).on('change', function() {
+            console.log('Lokasi dipilih:', $(this).val());
+        });
+
+        // Inisialisasi tooltip
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
         // Script untuk pencarian lokasi
         $('#btnSearchLokasi').on('click', function() {
-            const searchTerm = $('#searchLokasi').val().toLowerCase();
-            $('#lokasiTableBody tr').each(function() {
-                const namaLokasi = $(this).find('td:eq(1)').text().toLowerCase();
-                const alamatLokasi = $(this).find('td:eq(2)').text().toLowerCase();
-                const keterangan = $(this).find('td:eq(3)').text().toLowerCase();
+            console.log('Mencari lokasi dengan keyword:', $('#searchLokasi').val());
+            searchLokasi();
+        });
 
-                if (namaLokasi.includes(searchTerm) ||
-                    alamatLokasi.includes(searchTerm) ||
+        $('#searchLokasi').on('keyup', function(e) {
+            if (e.key === 'Enter') {
+                console.log('Mencari lokasi dengan keyword (Enter):', $(this).val());
+                searchLokasi();
+            }
+        });
+
+        function searchLokasi() {
+            const searchTerm = $('#searchLokasi').val().toLowerCase();
+            console.log('Mencari lokasi:', searchTerm);
+            let found = false;
+
+            $('#lokasiTableBody tr').each(function() {
+                const kodeLokasi = $(this).find('td:eq(1)').text().toLowerCase();
+                const namaLokasi = $(this).find('td:eq(2)').text().toLowerCase();
+                const alamat = $(this).find('td:eq(3)').text().toLowerCase();
+                const keterangan = $(this).find('td:eq(4)').text().toLowerCase();
+
+                if (kodeLokasi.includes(searchTerm) ||
+                    namaLokasi.includes(searchTerm) ||
+                    alamat.includes(searchTerm) ||
                     keterangan.includes(searchTerm)) {
                     $(this).show();
+                    found = true;
                 } else {
                     $(this).hide();
                 }
             });
-        });
+
+            console.log('Hasil pencarian:', found ? 'Ditemukan' : 'Tidak ditemukan');
+
+            if (!found) {
+                $('#lokasiTableBody').append(`
+                    <tr id="noResults">
+                        <td colspan="6" class="text-center">Tidak ada data yang ditemukan</td>
+                    </tr>
+                `);
+            } else {
+                $('#noResults').remove();
+            }
+        }
 
         // Script untuk memilih lokasi
         $('.select-lokasi').on('click', function() {
@@ -375,6 +569,8 @@
             const kode = $(this).data('kode');
             const nama = $(this).data('nama');
             const alamat = $(this).data('alamat');
+
+            console.log('Lokasi dipilih:', { id, kode, nama, alamat });
 
             $('#kode_lokasi').val(kode);
             $('#nama_lokasi').val(nama);
@@ -398,30 +594,231 @@
             const id = $(this).data('id');
             const nama = $(this).data('nama');
 
-            if (confirm(`Apakah Anda yakin ingin menghapus lokasi "${nama}"?`)) {
-                $.ajax({
-                    url: `/lokasi/${id}`,
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    success: function(data) {
-                        if (data.success) {
-                            $(this).closest('tr').remove();
-                            toastr.success('Lokasi berhasil dihapus');
-                        } else {
-                            toastr.error(data.message || 'Gagal menghapus lokasi');
+            console.log('Mencoba menghapus lokasi:', { id, nama });
+
+            Swal.fire({
+                title: 'Konfirmasi Hapus',
+                text: `Apakah Anda yakin ingin menghapus lokasi "${nama}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#dc3545'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log('Konfirmasi hapus lokasi diterima');
+                    $.ajax({
+                        url: `/lokasi/${id}`,
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            console.log('Response hapus lokasi:', response);
+                            if (response.success) {
+                                $(this).closest('tr').fadeOut(300, function() {
+                                    $(this).remove();
+                                    if ($('#lokasiTableBody tr').length === 0) {
+                                        $('#lokasiTableBody').append(`
+                                            <tr>
+                                                <td colspan="6" class="text-center">Tidak ada data lokasi</td>
+                                            </tr>
+                                        `);
+                                    }
+                                });
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: 'Lokasi berhasil dihapus',
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                console.error('Gagal menghapus lokasi:', response.message);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: response.message || 'Gagal menghapus lokasi',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        }.bind(this),
+                        error: function(xhr) {
+                            console.error('Error saat menghapus lokasi:', xhr);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Terjadi kesalahan saat menghapus lokasi',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
                         }
-                    }.bind(this),
-                    error: function(error) {
-                        console.error('Error:', error);
-                        toastr.error('Terjadi kesalahan saat menghapus lokasi');
-                    }
+                    });
+                } else {
+                    console.log('Konfirmasi hapus lokasi dibatalkan');
+                }
+            });
+        });
+
+        // Script untuk form lokasi
+        $('#formLokasi').on('submit', function(e) {
+            e.preventDefault();
+            console.log('Form lokasi submission dimulai');
+
+            // Validasi form
+            if (!this.checkValidity()) {
+                e.stopPropagation();
+                $(this).addClass('was-validated');
+                console.error('Validasi form lokasi gagal');
+                return;
+            }
+
+            // Validasi input
+            const kodeLokasi = $('#kode_lokasi').val().trim();
+            const namaLokasi = $('#nama_lokasi').val().trim();
+            const alamat = $('#alamat').val().trim();
+
+            console.log('Data lokasi yang akan disimpan:', {
+                kodeLokasi,
+                namaLokasi,
+                alamat
+            });
+
+            if (!kodeLokasi || !namaLokasi || !alamat) {
+                console.error('Validasi input lokasi gagal:', {
+                    kodeLokasi,
+                    namaLokasi,
+                    alamat
+                });
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Semua field harus diisi',
+                    icon: 'error'
+                });
+                return;
+            }
+
+            // Konfirmasi sebelum simpan
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin menyimpan lokasi baru?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log('Konfirmasi simpan lokasi diterima');
+                    const submitBtn = $('#submitLokasiBtn');
+                    const submitSpinner = $('#submitLokasiSpinner');
+                    const submitText = $('#submitLokasiText');
+
+                    // Disable button dan tampilkan spinner
+                    submitBtn.prop('disabled', true);
+                    submitSpinner.removeClass('d-none');
+                    submitText.text('Menyimpan...');
+
+                    // Siapkan data
+                    const formData = new FormData(this);
+                    formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
+
+                    console.log('Data form lokasi yang akan dikirim:', Object.fromEntries(formData));
+
+                    // Kirim form
+                    $.ajax({
+                        url: $(this).attr('action'),
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            console.log('Response simpan lokasi:', response);
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Berhasil!',
+                                    text: 'Lokasi berhasil disimpan',
+                                    icon: 'success'
+                                }).then(() => {
+                                    // Reset form
+                                    $('#formLokasi')[0].reset();
+                                    $('#formLokasi').removeClass('was-validated');
+
+                                    // Refresh data lokasi di select
+                                    refreshLokasiSelect();
+                                });
+                            } else {
+                                console.error('Gagal menyimpan lokasi:', response.message);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: response.message || 'Gagal menyimpan lokasi',
+                                    icon: 'error'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error saat menyimpan lokasi:', {
+                                status,
+                                error,
+                                response: xhr.responseText,
+                                statusCode: xhr.status
+                            });
+
+                            let errorMessage = 'Terjadi kesalahan saat menyimpan lokasi';
+
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.message) {
+                                    errorMessage = response.message;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing response:', e);
+                            }
+
+                            Swal.fire({
+                                title: 'Error!',
+                                text: errorMessage,
+                                icon: 'error'
+                            });
+                        },
+                        complete: function() {
+                            // Enable button dan sembunyikan spinner
+                            submitBtn.prop('disabled', false);
+                            submitSpinner.addClass('d-none');
+                            submitText.text('Simpan Lokasi');
+                        }
+                    });
+                } else {
+                    console.log('Konfirmasi simpan lokasi dibatalkan');
+                }
+            });
+        });
+
+        // Fungsi untuk refresh data lokasi di select
+        function refreshLokasiSelect() {
+            try {
+                console.log('Memperbarui daftar lokasi di select...');
+                const select = $('#id_lokasi');
+                select.empty();
+
+                @foreach($lokasi as $l)
+                    select.append(new Option(
+                        `{{ $l->kode_lokasi }} | {{ $l->nama_lokasi }}`,
+                        `{{ $l->id }}`
+                    ));
+                @endforeach
+
+                select.trigger('change');
+                console.log('Daftar lokasi berhasil diperbarui');
+            } catch (error) {
+                console.error('Error saat memperbarui daftar lokasi:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Gagal memperbarui daftar lokasi',
+                    icon: 'error'
                 });
             }
-        });
+        }
     });
 </script>
 @endpush
